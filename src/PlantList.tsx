@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import db, { type Plant } from './db'
+import PlantCard from './PlantCard'
 
 interface Props {
   refreshKey: number
+  onRefresh: () => void
 }
 
-export default function PlantList({ refreshKey }: Props) {
-  const { t, i18n } = useTranslation()
+export default function PlantList({ refreshKey, onRefresh }: Props) {
+  const { t } = useTranslation()
   const [plants, setPlants] = useState<Plant[]>([])
 
   useEffect(() => {
@@ -18,14 +20,9 @@ export default function PlantList({ refreshKey }: Props) {
 
   return (
     <ul>
-      {plants.map((plant) => (
-        <li key={plant.id}>
-          <strong>{plant.name}</strong> — {t('waterEvery', { count: plant.wateringIntervalDays })}
-          {plant.lastWateredAt && (
-            <>, {t('lastWatered', {
-              date: new Intl.DateTimeFormat(i18n.resolvedLanguage).format(plant.lastWateredAt),
-            })}</>
-          )}
+      {plants.map((p) => (
+        <li key={p.id}>
+          <PlantCard plant={p} onWatered={onRefresh} />
         </li>
       ))}
     </ul>

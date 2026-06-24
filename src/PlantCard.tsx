@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { compressImage } from './compressImage'
 import db, { type Plant } from './db'
 import { daysUntilWatering, nextWateringDate } from './watering'
 
@@ -26,6 +27,18 @@ export default function PlantCard({ plant, onWatered }: Props) {
     onWatered()
   }
 
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const blob = await compressImage(file)
+      await db.plants.update(plant.id, { photo: blob })
+      onWatered()
+    } catch {
+      // unreadable file — ignore
+    }
+  }
+
   const statusText =
     !plant.lastWateredAt
       ? t('neverWatered')
@@ -37,12 +50,23 @@ export default function PlantCard({ plant, onWatered }: Props) {
 
   return (
     <div>
-      {photoUrl && <img src={photoUrl} alt={plant.name} width={80} height={80} />}
+      {photoUrl && (
+        <img src={photoUrl} alt={plant.name} width={80} height={80} style={{ objectFit: 'cover' }} />
+      )}
       <strong>{plant.name}</strong>
       <div>{t('waterEvery', { count: plant.wateringIntervalDays })}</div>
       {nextDate && <div>{t('nextWatering', { date: fmt(nextDate) })}</div>}
       <div>{statusText}</div>
       <button onClick={handleWatered}>{t('watered')}</button>
+      <label>
+        {t(plant.photo ? 'changePhoto' : 'addPhoto')}
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handlePhotoChange}
+        />
+      </label>
     </div>
   )
 }

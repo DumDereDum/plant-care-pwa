@@ -27,6 +27,9 @@
   "addPlantHeading": "Добавить растение",
   "labelName": "Название",
   "labelInterval": "Интервал полива (дней)",
+  "labelPhoto": "Фото (необязательно)",
+  "addPhoto": "Добавить фото",
+  "changePhoto": "Изменить фото",
   "submitAdd": "Добавить",
   "updateAvailable": "Доступна новая версия.",
   "updateNow": "Обновить"

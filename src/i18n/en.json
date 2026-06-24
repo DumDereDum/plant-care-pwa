@@ -21,6 +21,9 @@
   "addPlantHeading": "Add Plant",
   "labelName": "Name",
   "labelInterval": "Watering interval (days)",
+  "labelPhoto": "Photo (optional)",
+  "addPhoto": "Add photo",
+  "changePhoto": "Change photo",
   "submitAdd": "Add plant",
   "updateAvailable": "A new version is available.",
   "updateNow": "Update"

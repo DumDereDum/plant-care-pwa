@@ -1,0 +1,16 @@
+{
+  "appTitle": "Уход за растениями",
+  "plantsHeading": "Мои растения",
+  "plantsEmpty": "Растений пока нет.",
+  "waterEvery_one": "поливать каждый {{count}} день",
+  "waterEvery_few": "поливать каждые {{count}} дня",
+  "waterEvery_many": "поливать каждые {{count}} дней",
+  "waterEvery_other": "поливать каждые {{count}} дня",
+  "lastWatered": "последний полив {{date}}",
+  "addPlantHeading": "Добавить растение",
+  "labelName": "Название",
+  "labelInterval": "Интервал полива (дней)",
+  "submitAdd": "Добавить",
+  "updateAvailable": "Доступна новая версия.",
+  "updateNow": "Обновить"
+}

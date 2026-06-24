@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import db from './db'
 
 interface Props {
@@ -6,6 +7,7 @@ interface Props {
 }
 
 export default function AddPlantForm({ onAdded }: Props) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
 
@@ -26,7 +28,7 @@ export default function AddPlantForm({ onAdded }: Props) {
     <form onSubmit={handleSubmit}>
       <div>
         <label>
-          Name{' '}
+          {t('labelName')}{' '}
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -36,7 +38,7 @@ export default function AddPlantForm({ onAdded }: Props) {
       </div>
       <div>
         <label>
-          Watering interval (days){' '}
+          {t('labelInterval')}{' '}
           <input
             type="number"
             min={1}
@@ -46,7 +48,7 @@ export default function AddPlantForm({ onAdded }: Props) {
           />
         </label>
       </div>
-      <button type="submit">Add plant</button>
+      <button type="submit">{t('submitAdd')}</button>
     </form>
   )
 }

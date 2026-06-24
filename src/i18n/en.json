@@ -1,0 +1,14 @@
+{
+  "appTitle": "Plant Care",
+  "plantsHeading": "My Plants",
+  "plantsEmpty": "No plants yet.",
+  "waterEvery_one": "water every {{count}} day",
+  "waterEvery_other": "water every {{count}} days",
+  "lastWatered": "last watered {{date}}",
+  "addPlantHeading": "Add Plant",
+  "labelName": "Name",
+  "labelInterval": "Watering interval (days)",
+  "submitAdd": "Add plant",
+  "updateAvailable": "A new version is available.",
+  "updateNow": "Update"
+}

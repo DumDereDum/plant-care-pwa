@@ -1,111 +1,201 @@
+/*
+ * Design foundation — tokens, base reset, app shell.
+ * Tokens are taken from DESIGN.md (the "bright & playful" direction).
+ * Plain CSS + CSS custom properties, no Tailwind.
+ */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* ---- Brand palette (DESIGN.md) ---- */
+  --green-50: #e7f8ec;
+  --green-100: #c2edce;
+  --green-500: #2fb55f;
+  --green-600: #259a4e;
+  --green-700: #1c7a3e;
+  --green-900: #0e3d20;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --coral-50: #ffede7;
+  --coral-100: #ffd2c4;
+  --coral-500: #ff7a59;
+  --coral-600: #e85f3e;
+  --coral-900: #5c2113;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  --amber-50: #fff4dc;
+  --amber-100: #ffe2a8;
+  --amber-500: #ffb627;
+  --amber-600: #e89a0e;
+  --amber-900: #5c3d02;
+
+  /* ---- Semantic tokens (light) ---- */
+  --color-bg: #fff9f2; /* warm app background */
+  --color-surface: #ffffff; /* cards */
+  --color-text: #2b2420; /* ink / primary text */
+  --color-muted: #7a716b; /* secondary text */
+  --color-border: #f0e7de; /* hairline */
+
+  --color-primary: var(--green-600);
+  --color-primary-strong: var(--green-700);
+  --color-on-primary: #ffffff;
+  --color-accent: var(--green-500);
+
+  --color-danger: var(--coral-600);
+  --color-warning: var(--amber-600);
+
+  /* ---- Radius ---- */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  /* ---- Spacing scale (8px-based) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ---- Elevation (single soft shadow) ---- */
+  --shadow-card: 0 6px 20px rgba(43, 36, 32, 0.08);
+
+  /* ---- Typography ---- */
+  --font-display: 'Comfortaa', system-ui, 'Segoe UI', sans-serif;
+  --font-body: 'Nunito Sans', system-ui, 'Segoe UI', sans-serif;
+
+  --text-display: 28px;
+  --text-h1: 24px;
+  --text-h2: 20px;
+  --text-h3: 18px;
+  --text-body: 16px;
+  --text-small: 14px;
+  --text-tiny: 12px;
+
+  /* ---- Layout ---- */
+  --app-max-width: 480px;
+
   color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  text-rendering: optimizeLegibility;
 }
 
+/* ---- Dark palette (derived; DESIGN.md has no explicit dark set) ---- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    --color-bg: #16140f; /* warm near-black */
+    --color-surface: #221e19;
+    --color-text: #f5efe8;
+    --color-muted: #b5aba1;
+    --color-border: #332c25;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --color-primary: var(--green-500);
+    --color-primary-strong: var(--green-600);
+    --color-on-primary: #0e3d20;
+    --color-accent: var(--green-500);
+
+    --color-danger: var(--coral-500);
+    --color-warning: var(--amber-500);
+
+    --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.35);
   }
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+/* ---- Base reset ---- */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-body {
+* {
   margin: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100svh;
+  background: var(--color-bg);
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* ---- Headings / text (sentence case, never all-caps) ---- */
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text);
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: var(--text-h1);
 }
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: var(--text-h2);
 }
-p {
-  margin: 0;
+h3 {
+  font-size: var(--text-h3);
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+small {
+  font-size: var(--text-small);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* ---- App shell (mobile-first, centered column) ---- */
+#root {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Respect iOS safe-area insets; bottom inset reserved for future bottom nav (T10.3). */
+main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  padding-top: max(var(--space-4), env(safe-area-inset-top));
+  padding-left: max(var(--space-4), env(safe-area-inset-left));
+  padding-right: max(var(--space-4), env(safe-area-inset-right));
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
 }

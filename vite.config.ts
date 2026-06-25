@@ -38,7 +38,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // woff2 included so self-hosted fonts are precached and work offline.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
     }),
   ],

@@ -19,7 +19,9 @@ Mobile-first — this is used on a phone.
 
 ## Typography
 
-- Display / headings / big numbers: "Fredoka" (Google Fonts), weights 500–600.
+- Display / headings / big numbers: "Comfortaa" (Google Fonts), weights 500–600.
+  (Replaces the originally specced "Fredoka", which has no Cyrillic glyphs — the UI is
+  bilingual EN/RU, so the display font must cover Cyrillic. Fonts are self-hosted/bundled.)
 - Body / UI / labels: "Nunito Sans" (Google Fonts), weight 400 (body), 600 (emphasis).
 - At most these two typefaces. Sentence case everywhere; never ALL CAPS.
 - Scale (px): display 28, h1 24, h2 20, h3 18, body 16, small 14, tiny 12. Body line-height ~1.5.

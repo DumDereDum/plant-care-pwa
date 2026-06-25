@@ -96,7 +96,10 @@ interface CareLog {
 
 ## Phase 9 — Design foundation
 
-- [ ] **T9.1 — Design tokens, fonts, reset**
+- [x] **T9.1 — Design tokens, fonts, reset** — done 2026-06-25: DESIGN.md tokens as CSS
+  vars (+ derived dark palette), self-hosted Comfortaa + Nunito Sans (latin+cyrillic woff2,
+  precached for offline), base reset + mobile app shell; removed dead template CSS.
+  Note: display font is **Comfortaa**, not Fredoka (Fredoka has no Cyrillic) — DESIGN.md updated.
   Task: Lay the styling foundation from `DESIGN.md`, no Tailwind. (1) Add CSS custom
   properties for all `DESIGN.md` color tokens, radius, spacing scale, and the single soft
   shadow; support the dark palette via `prefers-color-scheme`. (2) Self-host Fredoka and

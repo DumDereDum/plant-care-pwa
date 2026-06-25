@@ -1,0 +1,202 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-self: stretch;
+  text-align: left;
+}
+
+.formHeader h3 {
+  text-align: center;
+}
+
+/* ---- Section ---- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-small);
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-1);
+}
+
+/* ---- Stats / stepper ---- */
+
+.stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.statLabel {
+  font-size: var(--text-small);
+  color: var(--color-muted);
+  min-width: 90px;
+}
+
+.stepper {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.stepperBtn {
+  background: none;
+  border: none;
+  padding: 3px;
+  cursor: pointer;
+  color: var(--color-border);
+  border-radius: var(--radius-sm);
+  line-height: 0;
+  transition: color 0.1s, background 0.1s;
+}
+
+.stepperBtn:hover {
+  color: var(--color-muted);
+  background: var(--color-border);
+}
+
+.stepperBtn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.stepperIcon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Filled colors match StatBar */
+.stepper[data-icon='sun'] .stepperBtnFilled    { color: var(--amber-500); }
+.stepper[data-icon='drop'] .stepperBtnFilled   { color: var(--green-500); }
+.stepper[data-icon='wave'] .stepperBtnFilled   { color: #4ab3d4; }
+.stepper[data-icon='star'] .stepperBtnFilled   { color: #9b7bd4; }
+
+/* ---- Temperature row ---- */
+
+.tempRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.tempField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ---- Generic field ---- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.fieldLabel {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font: inherit;
+  color: inherit;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ---- Perk picker ---- */
+
+.perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.perkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: opacity 0.1s, border-color 0.1s;
+}
+
+.perkBtn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.perkIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.perkInactive {
+  background: var(--color-border);
+  color: var(--color-muted);
+  border-color: transparent;
+  opacity: 0.7;
+}
+
+.perkBad {
+  background: rgba(232, 95, 62, 0.12);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.perkGood {
+  background: rgba(47, 181, 95, 0.12);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.perkNeutral {
+  background: var(--color-border);
+  color: var(--color-muted);
+  border-color: var(--color-muted);
+}
+
+/* ---- Apply interval button ---- */
+
+.applyBtn {
+  align-self: flex-start;
+}
+
+/* ---- Actions ---- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}

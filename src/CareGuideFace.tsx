@@ -1,55 +1,30 @@
 import { useTranslation } from 'react-i18next'
 import type { CareGuide } from './db'
+import { PERK_CONFIG } from './perkConfig'
 import Button from './ui/Button'
 import StatBar from './ui/StatBar'
-import {
-  ChildIcon,
-  DustIcon,
-  FlowerIcon,
-  LeafIcon,
-  PawIcon,
-  SparkleIcon,
-  ThermometerIcon,
-  WindIcon,
-} from './ui/icons'
+import { LeafIcon, ThermometerIcon } from './ui/icons'
 import styles from './CareGuideFace.module.css'
 
-type PerkTone = 'good' | 'bad' | 'neutral'
-
-interface PerkEntry {
-  Icon: React.ComponentType<{ className?: string }>
-  tone: PerkTone
-  labelKey: string
-}
-
-const PERK_MAP: Record<string, PerkEntry> = {
-  toxicCats:      { Icon: PawIcon,     tone: 'bad',     labelKey: 'perkToxicCats' },
-  toxicDogs:      { Icon: PawIcon,     tone: 'bad',     labelKey: 'perkToxicDogs' },
-  safeCats:       { Icon: PawIcon,     tone: 'good',    labelKey: 'perkSafeCats' },
-  safeDogs:       { Icon: PawIcon,     tone: 'good',    labelKey: 'perkSafeDogs' },
-  unsafeChildren: { Icon: ChildIcon,   tone: 'bad',     labelKey: 'perkUnsafeChildren' },
-  allergenic:     { Icon: FlowerIcon,  tone: 'bad',     labelKey: 'perkAllergenic' },
-  airPurifying:   { Icon: WindIcon,    tone: 'good',    labelKey: 'perkAirPurifying' },
-  oxygenBoost:    { Icon: SparkleIcon, tone: 'good',    labelKey: 'perkOxygenBoost' },
-  dustCollecting: { Icon: DustIcon,    tone: 'neutral', labelKey: 'perkDustCollecting' },
-}
-
-function getDisplayPerks(guide: CareGuide): Array<{ key: string } & PerkEntry> {
+function getDisplayPerks(guide: CareGuide) {
   const stored = guide.perks ?? []
-  const result: Array<{ key: string } & PerkEntry> = []
+  const result: Array<{ key: string } & (typeof PERK_CONFIG)[string]> = []
 
   // Derived safety: always show cat/dog status when guide exists
-  result.push(stored.includes('toxicCats')
-    ? { key: 'toxicCats', ...PERK_MAP.toxicCats }
-    : { key: 'safeCats',  ...PERK_MAP.safeCats })
-  result.push(stored.includes('toxicDogs')
-    ? { key: 'toxicDogs', ...PERK_MAP.toxicDogs }
-    : { key: 'safeDogs',  ...PERK_MAP.safeDogs })
+  result.push(
+    stored.includes('toxicCats')
+      ? { key: 'toxicCats', ...PERK_CONFIG.toxicCats }
+      : { key: 'safeCats',  ...PERK_CONFIG.safeCats },
+  )
+  result.push(
+    stored.includes('toxicDogs')
+      ? { key: 'toxicDogs', ...PERK_CONFIG.toxicDogs }
+      : { key: 'safeDogs',  ...PERK_CONFIG.safeDogs },
+  )
 
-  // Other stored perks (toxicCats/Dogs already handled above)
   for (const perk of stored) {
     if (perk === 'toxicCats' || perk === 'toxicDogs') continue
-    const entry = PERK_MAP[perk]
+    const entry = PERK_CONFIG[perk]
     if (entry) result.push({ key: perk, ...entry })
   }
 
@@ -59,11 +34,10 @@ function getDisplayPerks(guide: CareGuide): Array<{ key: string } & PerkEntry> {
 interface Props {
   guide: CareGuide | null
   onFlip: () => void
-  // Placeholder for future edit form; no-op until T11.4
-  onFillIn: () => void
+  onEdit: () => void
 }
 
-export default function CareGuideFace({ guide, onFlip, onFillIn }: Props) {
+export default function CareGuideFace({ guide, onFlip, onEdit }: Props) {
   const { t } = useTranslation()
 
   if (!guide) {
@@ -71,7 +45,7 @@ export default function CareGuideFace({ guide, onFlip, onFillIn }: Props) {
       <div className={styles.face}>
         <div className={styles.header}>
           <h3>{t('careGuideTitle')}</h3>
-          <Button variant="secondary" className={styles.flipBackBtn} onClick={onFlip}>
+          <Button variant="secondary" className={styles.headerBtn} onClick={onFlip}>
             {t('flipToPlant')}
           </Button>
         </div>
@@ -79,7 +53,7 @@ export default function CareGuideFace({ guide, onFlip, onFillIn }: Props) {
           <LeafIcon className={styles.emptyIcon} />
           <p className={styles.emptyTitle}>{t('careGuideEmpty')}</p>
           <p className={styles.emptyHint}>{t('careGuideEmptyHint')}</p>
-          <Button onClick={onFillIn}>{t('fillInGuide')}</Button>
+          <Button onClick={onEdit}>{t('fillInGuide')}</Button>
         </div>
       </div>
     )
@@ -104,9 +78,14 @@ export default function CareGuideFace({ guide, onFlip, onFillIn }: Props) {
           <h3>{t('careGuideTitle')}</h3>
           {guide.species && <p className={styles.species}>{guide.species}</p>}
         </div>
-        <Button variant="secondary" className={styles.flipBackBtn} onClick={onFlip}>
-          {t('flipToPlant')}
-        </Button>
+        <div className={styles.headerBtns}>
+          <Button variant="secondary" className={styles.headerBtn} onClick={onEdit}>
+            {t('editCareGuide')}
+          </Button>
+          <Button variant="secondary" className={styles.headerBtn} onClick={onFlip}>
+            {t('flipToPlant')}
+          </Button>
+        </div>
       </div>
 
       {hasStats && (

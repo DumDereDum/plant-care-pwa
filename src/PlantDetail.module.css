@@ -28,6 +28,11 @@
   }
 }
 
+/* Edit face needs left-aligned text */
+.cardEdit {
+  text-align: left;
+}
+
 .photo {
   width: 140px;
   height: 140px;
@@ -94,4 +99,51 @@
 .input:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 1px;
+}
+
+/* ── Watering history ── */
+
+.history {
+  align-self: stretch;
+  text-align: left;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.historyTitle {
+  font-size: var(--text-small);
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.historyIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #4ab3d4;
+}
+
+.historyDate {
+  font-size: var(--text-small);
+  color: var(--color-text);
 }

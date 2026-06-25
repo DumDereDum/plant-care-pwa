@@ -1,8 +1,10 @@
-import db, { type CareGuide, type Plant } from './db'
+import db, { type CareGuide, type CareLog, type Plant } from './db'
 
-// Bumped to 2 with the careGuides table (DB v2). Older backups (schemaVersion 1, no
-// careGuides) still import. A backup from a NEWER app version is rejected.
-export const SCHEMA_VERSION = 2
+// Bumped to 3 with the careLogs table (DB v3).
+// v1 backups (no careGuides, no careLogs) still import.
+// v2 backups (careGuides present, no careLogs) still import.
+// A backup from a NEWER app version is rejected.
+export const SCHEMA_VERSION = 3
 
 interface ExportedPlant {
   id: number
@@ -13,12 +15,21 @@ interface ExportedPlant {
   careGuideId?: number
 }
 
+interface ExportedCareLog {
+  id: number
+  plantId: number
+  type: 'water'
+  date: string // ISO string — Date serialised for JSON
+}
+
 export interface ExportPayload {
   schemaVersion: number
   exportedAt: string
   plants: ExportedPlant[]
-  /** Optional so v1 backups (which have no guides) still validate and import. */
+  /** Optional so v1 backups (no guides) still validate and import. */
   careGuides?: CareGuide[]
+  /** Optional so v1/v2 backups (no logs) still validate and import. */
+  careLogs?: ExportedCareLog[]
 }
 
 function blobToDataURL(blob: Blob): Promise<string> {
@@ -40,9 +51,10 @@ function dataURLToBlob(dataURL: string): Blob {
 }
 
 export async function buildExportPayload(): Promise<ExportPayload> {
-  const [plants, careGuides] = await Promise.all([
+  const [plants, careGuides, rawLogs] = await Promise.all([
     db.plants.toArray(),
     db.careGuides.toArray(),
+    db.careLogs.toArray(),
   ])
 
   const exportedPlants: ExportedPlant[] = await Promise.all(
@@ -56,11 +68,19 @@ export async function buildExportPayload(): Promise<ExportPayload> {
     })),
   )
 
+  const careLogs: ExportedCareLog[] = rawLogs.map((l) => ({
+    id: l.id,
+    plantId: l.plantId,
+    type: l.type,
+    date: l.date.toISOString(),
+  }))
+
   return {
     schemaVersion: SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     plants: exportedPlants,
     careGuides,
+    careLogs,
   }
 }
 
@@ -100,13 +120,19 @@ export async function importData(file: File): Promise<{ count: number }> {
     careGuideId: p.careGuideId,
   }))
 
-  // Present only in v2+ backups; absent in v1 backups (guides left untouched).
+  // Present in v2+ backups; absent in v1 (guides left untouched).
   const careGuides: CareGuide[] = Array.isArray(payload.careGuides) ? payload.careGuides : []
 
-  // Atomic: restore plants and guides together so references stay consistent.
-  await db.transaction('rw', db.plants, db.careGuides, async () => {
+  // Present in v3+ backups; absent in v1/v2 (logs left untouched).
+  const careLogs: CareLog[] = Array.isArray(payload.careLogs)
+    ? payload.careLogs.map((l) => ({ ...l, date: new Date(l.date) }))
+    : []
+
+  // Atomic: restore all three tables so cross-references stay consistent.
+  await db.transaction('rw', db.plants, db.careGuides, db.careLogs, async () => {
     await db.plants.bulkPut(plants)
     if (careGuides.length > 0) await db.careGuides.bulkPut(careGuides)
+    if (careLogs.length > 0) await db.careLogs.bulkPut(careLogs)
   })
 
   return { count: plants.length }

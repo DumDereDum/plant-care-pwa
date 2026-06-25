@@ -1,4 +1,4 @@
-import type { Plant } from './db'
+import db, { type Plant } from './db'
 
 /** Calendar date only, time stripped to midnight. */
 function startOfDay(d: Date): Date {
@@ -16,6 +16,18 @@ export function nextWateringDate(plant: Plant): Date | null {
   const next = startOfDay(plant.lastWateredAt)
   next.setDate(next.getDate() + plant.wateringIntervalDays)
   return next
+}
+
+/**
+ * Records a watering event: updates lastWateredAt and appends a careLog row.
+ * Wrapped in a transaction so both writes succeed or both fail.
+ */
+export async function recordWatering(plantId: number): Promise<void> {
+  const now = new Date()
+  await db.transaction('rw', db.plants, db.careLogs, async () => {
+    await db.plants.update(plantId, { lastWateredAt: now })
+    await db.careLogs.add({ plantId, type: 'water' as const, date: now })
+  })
 }
 
 /**

@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import CareGuideFace from './CareGuideFace'
+import CareGuideEditForm from './CareGuideEditForm'
 import { compressImage } from './compressImage'
-import db, { type CareGuide, type Plant } from './db'
+import db, { type CareGuide, type CareLog, type Plant } from './db'
 import Button from './ui/Button'
 import Card from './ui/Card'
 import StatusPill from './ui/StatusPill'
-import { LeafIcon } from './ui/icons'
-import { daysUntilWatering, nextWateringDate } from './watering'
+import { DropIcon, LeafIcon } from './ui/icons'
+import { daysUntilWatering, nextWateringDate, recordWatering } from './watering'
 import styles from './PlantDetail.module.css'
 
 interface Props {
@@ -18,12 +19,13 @@ interface Props {
   onChanged: () => void
 }
 
-type Face = 'front' | 'back'
+type Face = 'front' | 'back' | 'edit'
 
 export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const [plant, setPlant] = useState<Plant | undefined>()
   const [guide, setGuide] = useState<CareGuide | null>(null)
+  const [history, setHistory] = useState<CareLog[]>([])
   const [face, setFace] = useState<Face>('front')
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
@@ -32,6 +34,17 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
 
   useEffect(() => {
     db.plants.get(plantId).then(setPlant)
+  }, [plantId, refreshKey])
+
+  useEffect(() => {
+    db.careLogs
+      .where('plantId').equals(plantId)
+      .toArray()
+      .then((logs) =>
+        setHistory(
+          logs.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5),
+        ),
+      )
   }, [plantId, refreshKey])
 
   useEffect(() => {
@@ -57,7 +70,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   const fmt = (d: Date) => new Intl.DateTimeFormat(i18n.resolvedLanguage).format(d)
 
   async function handleWatered() {
-    await db.plants.update(plantId, { lastWateredAt: new Date() })
+    await recordWatering(plantId)
     onChanged()
   }
 
@@ -92,6 +105,12 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     onChanged()
   }
 
+  function handleGuideSaved(saved: CareGuide) {
+    setGuide(saved)
+    setFace('back')
+    onChanged()
+  }
+
   const statusText = !plant.lastWateredAt
     ? t('neverWatered')
     : days < 0
@@ -108,7 +127,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
         {t('back')}
       </Button>
 
-      {face === 'front' ? (
+      {face === 'front' && (
         <Card key="front" className={styles.card}>
           <div className={styles.photo}>
             {photoUrl ? (
@@ -181,15 +200,49 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                 hidden
                 onChange={handlePhotoChange}
               />
+
+              {history.length > 0 && (
+                <div className={styles.history}>
+                  <h3 className={styles.historyTitle}>{t('historyHeading')}</h3>
+                  <ul className={styles.historyList}>
+                    {history.map((log) => (
+                      <li key={log.id} className={styles.historyItem}>
+                        <DropIcon className={styles.historyIcon} />
+                        <span className={styles.historyDate}>
+                          {new Intl.DateTimeFormat(i18n.resolvedLanguage, {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                          }).format(log.date)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
         </Card>
-      ) : (
+      )}
+
+      {face === 'back' && (
         <Card key="back" className={styles.card}>
           <CareGuideFace
             guide={guide}
             onFlip={() => setFace('front')}
-            onFillIn={() => setFace('front')}
+            onEdit={() => setFace('edit')}
+          />
+        </Card>
+      )}
+
+      {face === 'edit' && (
+        <Card key="edit" className={`${styles.card} ${styles.cardEdit}`}>
+          <CareGuideEditForm
+            plant={plant}
+            guide={guide}
+            onSaved={handleGuideSaved}
+            onCancel={() => setFace('back')}
+            onChanged={onChanged}
           />
         </Card>
       )}

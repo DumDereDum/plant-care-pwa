@@ -1,5 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie'
 
+export interface CareLog {
+  id: number
+  plantId: number
+  /** Event type — only 'water' for now; extensible for fertilise, repot, etc. */
+  type: 'water'
+  date: Date
+}
+
 export interface Plant {
   id: number
   name: string
@@ -69,6 +77,7 @@ export interface CareGuide {
 const db = new Dexie('plant-care-db') as Dexie & {
   plants: EntityTable<Plant, 'id'>
   careGuides: EntityTable<CareGuide, 'id'>
+  careLogs: EntityTable<CareLog, 'id'>
 }
 
 // v1 — kept so existing installs follow the documented upgrade path.
@@ -87,6 +96,19 @@ db.version(2)
   })
   .upgrade(() => {
     // Existing plants are preserved as-is; nothing to migrate.
+  })
+
+// v3 — add the `careLogs` table for watering history (and future event types).
+// Non-destructive: `careLogs` starts empty; plants and careGuides are unchanged.
+// IndexedDB version will be 30 (Dexie version × 10).
+db.version(3)
+  .stores({
+    plants: '++id, name, lastWateredAt, careGuideId',
+    careGuides: '++id, species, source',
+    careLogs: '++id, plantId, date, type',
+  })
+  .upgrade(() => {
+    // careLogs starts empty; no data transformation needed.
   })
 
 export default db

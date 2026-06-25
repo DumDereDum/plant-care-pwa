@@ -56,7 +56,7 @@ export default function App() {
             </>
           ))}
 
-        {tab === 'calendar' && <CalendarScreen />}
+        {tab === 'calendar' && <CalendarScreen refreshKey={refreshKey} onRefresh={refresh} />}
 
         {tab === 'help' && <InstallGuide />}
       </main>

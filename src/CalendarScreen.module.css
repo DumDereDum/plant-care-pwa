@@ -153,6 +153,10 @@
   background: #4ab3d4;
 }
 
+.dotCared {
+  background: #e8a83e;
+}
+
 /* On selected cells, keep dots visible by forcing white */
 .dayCellSelected .dot {
   background: rgba(255, 255, 255, 0.8);
@@ -221,6 +225,14 @@
 
 .plantIconDrop {
   color: #4ab3d4;
+}
+
+.plantIconFertilize {
+  color: #7bb35a;
+}
+
+.plantIconRepot {
+  color: #b5814a;
 }
 
 .plantName {

@@ -3,8 +3,7 @@ import Dexie, { type EntityTable } from 'dexie'
 export interface CareLog {
   id: number
   plantId: number
-  /** Event type — only 'water' for now; extensible for fertilise, repot, etc. */
-  type: 'water'
+  type: 'water' | 'fertilize' | 'repot'
   date: Date
 }
 
@@ -13,6 +12,10 @@ export interface Plant {
   name: string
   wateringIntervalDays: number
   lastWateredAt: Date | null
+  /** When set, the app reminds to fertilize on this cycle (days). Undefined = not tracking. */
+  fertilizeIntervalDays?: number
+  /** Updated each time a fertilize event is recorded. Undefined = never fertilized. */
+  lastFertilizedAt?: Date | null
   /**
    * Stored as ArrayBuffer (not Blob) to survive IndexedDB serialization on
    * iOS Safari and Android WebView.  When Dexie updates any field in a record
@@ -143,6 +146,19 @@ db.version(4)
           })
         }),
     )
+  })
+
+// v5 — add fertilizeIntervalDays + lastFertilizedAt to Plant.
+// Non-destructive: both fields are optional; existing plants keep undefined (= not tracking).
+// Adds lastFertilizedAt to the plants index.
+db.version(5)
+  .stores({
+    plants: '++id, name, lastWateredAt, lastFertilizedAt, careGuideId',
+    careGuides: '++id, species, source',
+    careLogs: '++id, plantId, date, type',
+  })
+  .upgrade(() => {
+    // Existing plants get undefined for the new fields — no migration needed.
   })
 
 export default db

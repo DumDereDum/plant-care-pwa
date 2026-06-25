@@ -6,6 +6,7 @@ import { imageMimeType } from './compressImage'
 import CareGuideFace from './CareGuideFace'
 import CareGuideEditForm from './CareGuideEditForm'
 import { compressImage } from './compressImage'
+import CareActionButton from './CareActionButton'
 import WateredButton from './WateredButton'
 import db, { type CareGuide, type CareLog, type Plant } from './db'
 import AchievementsPanel from './ui/AchievementsPanel'
@@ -13,8 +14,8 @@ import Button from './ui/Button'
 import Card from './ui/Card'
 import ScreenState from './ui/ScreenState'
 import StatusPill from './ui/StatusPill'
-import { DropIcon, LeafIcon } from './ui/icons'
-import { daysUntilWatering, nextWateringDate } from './watering'
+import { DropIcon, FertilizeIcon, LeafIcon, RepotIcon } from './ui/icons'
+import { daysUntilWatering, nextFertilizeDate, nextWateringDate } from './watering'
 import styles from './PlantDetail.module.css'
 
 interface Props {
@@ -37,6 +38,8 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
+  const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
+  const [fertilizeIntervalDays, setFertilizeIntervalDays] = useState(14)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -78,6 +81,10 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     () => (plant ? computeAchievements(allLogs, plant) : null),
     [allLogs, plant],
   )
+  const lastRepottedAt = useMemo(
+    () => allLogs.find(l => l.type === 'repot')?.date ?? null,
+    [allLogs],
+  )
 
   if (plantLoading) return <ScreenState kind="loading" />
   if (plantError || !plant) return <ScreenState kind="error" onRetry={onChanged} />
@@ -112,6 +119,8 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     if (!plant) return
     setName(plant.name)
     setIntervalDays(plant.wateringIntervalDays)
+    setFertilizeEnabled(!!plant.fertilizeIntervalDays)
+    setFertilizeIntervalDays(plant.fertilizeIntervalDays ?? 14)
     setEditing(true)
   }
 
@@ -122,6 +131,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     await db.plants.update(plantId, {
       name: trimmed,
       wateringIntervalDays: Math.max(1, Math.round(intervalDays)),
+      fertilizeIntervalDays: fertilizeEnabled ? Math.max(7, Math.round(fertilizeIntervalDays)) : undefined,
     })
     setEditing(false)
     onChanged()
@@ -204,6 +214,34 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   }}
                 />
               </div>
+              <label className={styles.toggle}>
+                <input
+                  className={styles.toggleInput}
+                  type="checkbox"
+                  checked={fertilizeEnabled}
+                  onChange={(e) => setFertilizeEnabled(e.target.checked)}
+                />
+                <span className={styles.toggleText}>{t('trackFertilize')}</span>
+              </label>
+              {fertilizeEnabled && (
+                <div className={styles.field}>
+                  <div className={styles.sliderHeader}>
+                    <span className={styles.fieldLabel}>{t('labelFertilizeInterval')}</span>
+                    <span className={styles.sliderValue}>{t('fertilizeEvery', { count: fertilizeIntervalDays })}</span>
+                  </div>
+                  <input
+                    className={styles.slider}
+                    type="range"
+                    min={7}
+                    max={90}
+                    value={fertilizeIntervalDays}
+                    onChange={(e) => setFertilizeIntervalDays(Number(e.target.value))}
+                    style={{
+                      background: `linear-gradient(to right, var(--color-primary) ${((fertilizeIntervalDays - 7) / 83) * 100}%, var(--color-border) ${((fertilizeIntervalDays - 7) / 83) * 100}%)`,
+                    }}
+                  />
+                </div>
+              )}
               <div className={styles.actions}>
                 <Button type="submit">{t('save')}</Button>
                 <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
@@ -222,9 +260,23 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
               {nextDate && (
                 <div className={styles.meta}>{t('nextWatering', { date: fmt(nextDate) })}</div>
               )}
+              {plant.fertilizeIntervalDays && (
+                <div className={styles.meta}>
+                  {t('fertilizeEvery', { count: plant.fertilizeIntervalDays })}
+                </div>
+              )}
+              {plant.fertilizeIntervalDays && (
+                <div className={styles.meta}>
+                  {nextFertilizeDate(plant)
+                    ? t('nextFertilize', { date: fmt(nextFertilizeDate(plant)!) })
+                    : t('neverFertilized')}
+                </div>
+              )}
 
               <div className={styles.actions}>
                 <WateredButton plantId={plantId} lastWateredAt={plant.lastWateredAt} onRefresh={onChanged} />
+                <CareActionButton plantId={plantId} type="fertilize" lastDoneAt={plant.lastFertilizedAt ?? null} onRefresh={onChanged} />
+                <CareActionButton plantId={plantId} type="repot" lastDoneAt={lastRepottedAt} onRefresh={onChanged} />
               </div>
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
@@ -244,13 +296,22 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   <ul className={styles.historyList}>
                     {history.map((log) => (
                       <li key={log.id} className={styles.historyItem}>
-                        <DropIcon className={styles.historyIcon} />
+                        {log.type === 'fertilize' ? (
+                          <FertilizeIcon className={`${styles.historyIcon} ${styles.historyIconFertilize}`} />
+                        ) : log.type === 'repot' ? (
+                          <RepotIcon className={`${styles.historyIcon} ${styles.historyIconRepot}`} />
+                        ) : (
+                          <DropIcon className={styles.historyIcon} />
+                        )}
                         <span className={styles.historyDate}>
                           {new Intl.DateTimeFormat(i18n.resolvedLanguage, {
                             weekday: 'short',
                             day: 'numeric',
                             month: 'short',
                           }).format(log.date)}
+                        </span>
+                        <span className={styles.historyType}>
+                          {t(`logType${log.type.charAt(0).toUpperCase()}${log.type.slice(1)}`)}
                         </span>
                       </li>
                     ))}

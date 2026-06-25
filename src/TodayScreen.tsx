@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { computeCurrentStreak, computeScore } from './achievements'
+import CareActionButton from './CareActionButton'
 import db, { type CareLog, type Plant } from './db'
 import PlantCard from './PlantCard'
 import ScreenState from './ui/ScreenState'
-import { DropIcon, LeafIcon } from './ui/icons'
-import { daysUntilWatering } from './watering'
+import { DropIcon, FertilizeIcon, LeafIcon } from './ui/icons'
+import { daysUntilFertilize, daysUntilWatering } from './watering'
 import styles from './TodayScreen.module.css'
 
 interface Props {
@@ -63,7 +64,7 @@ export default function TodayScreen({ refreshKey, onRefresh }: Props) {
     let totalScore = 0
     let bestStreak = 0
     for (const plant of plants) {
-      const logs = logsByPlant.get(plant.id) ?? []
+      const logs = (logsByPlant.get(plant.id) ?? []).filter(l => l.type === 'water')
       totalScore += computeScore(logs, plant.wateringIntervalDays)
       const s = computeCurrentStreak(logs, plant)
       if (s > bestStreak) bestStreak = s
@@ -90,6 +91,11 @@ export default function TodayScreen({ refreshKey, onRefresh }: Props) {
   const dueToday = plants.filter((p) => daysUntilWatering(p) === 0)
   const dueSoon = plants.filter((p) => daysUntilWatering(p) > 0)
   const needWater = overdue.length + dueToday.length
+
+  const fertilizeNow = plants.filter((p) => {
+    const d = daysUntilFertilize(p)
+    return d !== null && d <= 0
+  })
 
   return (
     <div className={styles.screen}>
@@ -122,6 +128,26 @@ export default function TodayScreen({ refreshKey, onRefresh }: Props) {
       <Bucket title={t('overdueHeading')} plants={overdue} onWatered={onRefresh} />
       <Bucket title={t('dueTodayHeading')} plants={dueToday} onWatered={onRefresh} />
       <Bucket title={t('dueSoonHeading')} plants={dueSoon} onWatered={onRefresh} />
+
+      {fertilizeNow.length > 0 && (
+        <section className={styles.bucket}>
+          <h2 className={styles.bucketTitle}>{t('fertilizeDueHeading')}</h2>
+          <ul className={styles.fertilizeList}>
+            {fertilizeNow.map((plant) => (
+              <li key={plant.id} className={styles.fertilizeRow}>
+                <FertilizeIcon className={styles.fertilizeIcon} />
+                <span className={styles.fertilizeName}>{plant.name}</span>
+                <CareActionButton
+                  plantId={plant.id}
+                  type="fertilize"
+                  lastDoneAt={plant.lastFertilizedAt ?? null}
+                  onRefresh={onRefresh}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }

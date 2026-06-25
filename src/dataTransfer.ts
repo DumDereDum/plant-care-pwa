@@ -19,7 +19,7 @@ interface ExportedPlant {
 interface ExportedCareLog {
   id: number
   plantId: number
-  type: 'water'
+  type: 'water' | 'fertilize' | 'repot'
   date: string // ISO string — Date serialised for JSON
 }
 

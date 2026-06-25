@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import WateredButton from './WateredButton'
 import db, { type CareLog, type Plant } from './db'
 import ScreenState from './ui/ScreenState'
-import { DropIcon, LeafIcon } from './ui/icons'
-import { nextWateringDate } from './watering'
+import { DropIcon, FertilizeIcon, LeafIcon, RepotIcon } from './ui/icons'
+import { nextFertilizeDate, nextWateringDate } from './watering'
 import styles from './CalendarScreen.module.css'
 
 // ---- pure date helpers -----------------------------------------------------
@@ -56,8 +56,12 @@ function projectDatesInRange(plant: Plant, rangeStart: Date, rangeEnd: Date): Da
 interface DayEntry {
   /** Plants projected due on this day (future) or overdue on this day (past). */
   due: Plant[]
+  /** Plants projected due for fertilizing on this day. */
+  fertilizeDue: Plant[]
   /** Actual watering events recorded in careLog on this day. */
   watered: { plant: Plant; log: CareLog }[]
+  fertilized: { plant: Plant; log: CareLog }[]
+  repotted: { plant: Plant; log: CareLog }[]
 }
 
 function buildDayMap(
@@ -76,7 +80,7 @@ function buildDayMap(
 
   const map = new Map<string, DayEntry>()
   const get = (k: string): DayEntry => {
-    if (!map.has(k)) map.set(k, { due: [], watered: [] })
+    if (!map.has(k)) map.set(k, { due: [], fertilizeDue: [], watered: [], fertilized: [], repotted: [] })
     return map.get(k)!
   }
 
@@ -110,12 +114,46 @@ function buildDayMap(
     }
   }
 
+  // Fertilize due projections — same logic as watering, but using fertilize fields.
+  for (const plant of plants) {
+    if (!plant.fertilizeIntervalDays) continue
+    const nextF = nextFertilizeDate(plant)
+
+    if (!nextF) {
+      // Interval set but never fertilized → due today
+      if (todayK >= rangeStartK && todayK <= rangeEndK) {
+        get(todayK).fertilizeDue.push(plant)
+      }
+      continue
+    }
+
+    const nextFK = dayKey(nextF)
+    if (nextF < today) {
+      if (nextFK >= rangeStartK && nextFK <= rangeEndK) {
+        get(nextFK).fertilizeDue.push(plant)
+      }
+    } else {
+      const projFrom = today > rangeStart ? today : rangeStart
+      // Walk forward from lastFertilizedAt + interval
+      let date = addDays(startOfDay(plant.lastFertilizedAt!), plant.fertilizeIntervalDays)
+      while (date < projFrom) date = addDays(date, plant.fertilizeIntervalDays)
+      while (date <= rangeEnd) {
+        const k = dayKey(date)
+        if (k >= rangeStartK) get(k).fertilizeDue.push(plant)
+        date = addDays(date, plant.fertilizeIntervalDays)
+      }
+    }
+  }
+
   for (const log of logs) {
     const plant = plantById.get(log.plantId)
     if (!plant) continue
     const k = dayKey(startOfDay(log.date))
     if (k >= rangeStartK && k <= rangeEndK) {
-      get(k).watered.push({ plant, log })
+      const entry = get(k)
+      if (log.type === 'fertilize') entry.fertilized.push({ plant, log })
+      else if (log.type === 'repot') entry.repotted.push({ plant, log })
+      else entry.watered.push({ plant, log })
     }
   }
 
@@ -252,6 +290,8 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
           const isSelected = k === selectedKey
           const hasDue = (entry?.due.length ?? 0) > 0
           const hasWatered = (entry?.watered.length ?? 0) > 0
+          const hasFertilizeDue = (entry?.fertilizeDue.length ?? 0) > 0
+          const hasCared = ((entry?.fertilized.length ?? 0) + (entry?.repotted.length ?? 0)) > 0
 
           return (
             <button
@@ -270,7 +310,7 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
               onClick={() => setSelectedKey(isSelected ? null : k)}
             >
               <span className={styles.dayNum}>{date.getDate()}</span>
-              {(hasDue || hasWatered) && (
+              {(hasDue || hasWatered || hasCared || hasFertilizeDue) && (
                 <span className={styles.dots}>
                   {hasDue && (
                     <span
@@ -278,6 +318,7 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
                     />
                   )}
                   {hasWatered && <span className={`${styles.dot} ${styles.dotWatered}`} />}
+                  {(hasCared || hasFertilizeDue) && <span className={`${styles.dot} ${styles.dotCared}`} />}
                 </span>
               )}
             </button>
@@ -293,7 +334,11 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
           </p>
 
           {(!selectedEntry ||
-            (selectedEntry.due.length === 0 && selectedEntry.watered.length === 0)) && (
+            (selectedEntry.due.length === 0 &&
+              selectedEntry.fertilizeDue.length === 0 &&
+              selectedEntry.watered.length === 0 &&
+              selectedEntry.fertilized.length === 0 &&
+              selectedEntry.repotted.length === 0)) && (
             <p className={styles.panelEmpty}>{t('calendarNoEvents')}</p>
           )}
 
@@ -319,6 +364,20 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
             </section>
           )}
 
+          {(selectedEntry?.fertilizeDue.length ?? 0) > 0 && (
+            <section className={styles.panelSection}>
+              <h3 className={styles.panelSectionTitle}>{t('calendarFertilizeDue')}</h3>
+              <ul className={styles.plantList}>
+                {selectedEntry!.fertilizeDue.map((plant) => (
+                  <li key={plant.id} className={styles.plantRow}>
+                    <FertilizeIcon className={`${styles.plantIcon} ${styles.plantIconFertilize}`} />
+                    <span className={styles.plantName}>{plant.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {(selectedEntry?.watered.length ?? 0) > 0 && (
             <section className={styles.panelSection}>
               <h3 className={styles.panelSectionTitle}>{t('calendarWatered')}</h3>
@@ -326,6 +385,46 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
                 {selectedEntry!.watered.map(({ plant, log }) => (
                   <li key={log.id} className={styles.plantRow}>
                     <DropIcon className={`${styles.plantIcon} ${styles.plantIconDrop}`} />
+                    <span className={styles.plantName}>{plant.name}</span>
+                    <span className={styles.logTime}>
+                      {new Intl.DateTimeFormat(locale, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }).format(log.date)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {(selectedEntry?.fertilized.length ?? 0) > 0 && (
+            <section className={styles.panelSection}>
+              <h3 className={styles.panelSectionTitle}>{t('calendarFertilized')}</h3>
+              <ul className={styles.plantList}>
+                {selectedEntry!.fertilized.map(({ plant, log }) => (
+                  <li key={log.id} className={styles.plantRow}>
+                    <FertilizeIcon className={`${styles.plantIcon} ${styles.plantIconFertilize}`} />
+                    <span className={styles.plantName}>{plant.name}</span>
+                    <span className={styles.logTime}>
+                      {new Intl.DateTimeFormat(locale, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }).format(log.date)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {(selectedEntry?.repotted.length ?? 0) > 0 && (
+            <section className={styles.panelSection}>
+              <h3 className={styles.panelSectionTitle}>{t('calendarRepotted')}</h3>
+              <ul className={styles.plantList}>
+                {selectedEntry!.repotted.map(({ plant, log }) => (
+                  <li key={log.id} className={styles.plantRow}>
+                    <RepotIcon className={`${styles.plantIcon} ${styles.plantIconRepot}`} />
                     <span className={styles.plantName}>{plant.name}</span>
                     <span className={styles.logTime}>
                       {new Intl.DateTimeFormat(locale, {

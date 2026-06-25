@@ -124,10 +124,11 @@ export interface PlantAchievements {
 }
 
 export function computeAchievements(logs: CareLog[], plant: Plant): PlantAchievements {
-  const total = logs.length
-  const curStreak = computeCurrentStreak(logs, plant)
-  const longStreak = computeLongestStreak(logs, plant.wateringIntervalDays)
-  const score = computeScore(logs, plant.wateringIntervalDays)
+  const waterLogs = logs.filter(l => l.type === 'water')
+  const total = waterLogs.length
+  const curStreak = computeCurrentStreak(waterLogs, plant)
+  const longStreak = computeLongestStreak(waterLogs, plant.wateringIntervalDays)
+  const score = computeScore(waterLogs, plant.wateringIntervalDays)
 
   const earnedBadges = ALL_BADGES.filter(b =>
     b.type === 'streak' ? longStreak >= b.threshold : total >= b.threshold,

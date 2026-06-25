@@ -30,6 +30,43 @@ export async function recordWatering(plantId: number): Promise<void> {
   })
 }
 
+export async function recordFertilize(plantId: number): Promise<void> {
+  const now = new Date()
+  await db.transaction('rw', db.plants, db.careLogs, async () => {
+    await db.plants.update(plantId, { lastFertilizedAt: now })
+    await db.careLogs.add({ plantId, type: 'fertilize' as const, date: now })
+  })
+}
+
+export async function recordRepot(plantId: number): Promise<void> {
+  await db.careLogs.add({ plantId, type: 'repot' as const, date: new Date() })
+}
+
+/**
+ * Next fertilize date, or null if the plant has no fertilize interval or has never been
+ * fertilized (caller treats null as "due now").
+ */
+export function nextFertilizeDate(plant: Plant): Date | null {
+  if (!plant.fertilizeIntervalDays || !plant.lastFertilizedAt) return null
+  const next = startOfDay(plant.lastFertilizedAt)
+  next.setDate(next.getDate() + plant.fertilizeIntervalDays)
+  return next
+}
+
+/**
+ * Days until the next fertilize from today.
+ * Returns null  when the plant is not tracking fertilize.
+ * Returns 0     when interval is set but never fertilized (treat as due today).
+ * Returns < 0   when overdue.
+ */
+export function daysUntilFertilize(plant: Plant): number | null {
+  if (!plant.fertilizeIntervalDays) return null
+  if (!plant.lastFertilizedAt) return 0
+  const today = startOfDay(new Date())
+  const next = nextFertilizeDate(plant)!
+  return Math.round((next.getTime() - today.getTime()) / 86_400_000)
+}
+
 /**
  * Days until the next watering from today (midnight).
  * Negative  → overdue.

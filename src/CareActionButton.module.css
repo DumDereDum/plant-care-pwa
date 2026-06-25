@@ -1,0 +1,11 @@
+.done {
+  background: var(--green-600) !important;
+  border-color: var(--green-600) !important;
+  color: #fff !important;
+  pointer-events: none;
+}
+
+.check {
+  width: 18px;
+  height: 18px;
+}

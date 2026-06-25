@@ -125,3 +125,28 @@
   outline-offset: 3px;
   border-radius: var(--radius-pill);
 }
+
+/* ── Optional feature toggle ── */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleInput {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.toggleText {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-muted);
+}

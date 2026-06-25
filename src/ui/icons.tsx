@@ -200,6 +200,26 @@ export function AlertCircleIcon({ className }: IconProps) {
   )
 }
 
+export function FertilizeIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      {/* Erlenmeyer flask: narrow neck top, wider body below */}
+      <path d="M9 2h6v7l4 9H5l4-9V2z" />
+    </svg>
+  )
+}
+
+export function RepotIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      {/* Rim strip */}
+      <path d="M4 8h16v2H4z" />
+      {/* Trapezoidal pot body */}
+      <path d="M7 10l1.5 9h7l1.5-9z" />
+    </svg>
+  )
+}
+
 export function CheckIcon({ className }: IconProps) {
   return (
     <svg

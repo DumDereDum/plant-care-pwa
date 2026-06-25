@@ -121,3 +121,37 @@
   opacity: 0.7;
   margin-top: var(--space-1);
 }
+
+/* ---- Fertilize reminder list ---- */
+
+.fertilizeList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fertilizeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.fertilizeIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #7bb35a;
+}
+
+.fertilizeName {
+  flex: 1;
+  font-size: var(--text-body);
+  font-weight: 600;
+}

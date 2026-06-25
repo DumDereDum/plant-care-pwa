@@ -122,7 +122,11 @@ interface CareLog {
 
 ## Phase 10 — Redesign existing screens
 
-- [ ] **T10.1 — Redesign "My Plants" list**
+- [x] **T10.1 — Redesign "My Plants" list** — done 2026-06-25: PlantCard redesigned
+  (round avatar = photo or tinted leaf, name, status pill, Watered) as a vertical card stack;
+  tap opens a placeholder PlantDetail screen (hosts the photo add/change + watered moved off
+  the card, so nothing lost). Verified on mobile width via screenshots. Detail becomes the full
+  view in T11.2.
   Task: Restyle the plant list as a card grid/list per `DESIGN.md`: round plant avatar
   (photo or tinted leaf icon), name, status pill, "Watered" action. Tap a card opens the
   detail screen (placeholder route/handler is fine until T11.2). Keep all strings in i18n.

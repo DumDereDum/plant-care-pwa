@@ -19,6 +19,8 @@
   "dueSoonDays_one": "in {{count}} day",
   "dueSoonDays_other": "in {{count}} days",
   "watered": "Watered",
+  "back": "Back",
+  "detailComingSoon": "Full plant details are coming soon.",
   "addPlantHeading": "Add Plant",
   "labelName": "Name",
   "labelInterval": "Watering interval (days)",

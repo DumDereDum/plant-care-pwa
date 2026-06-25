@@ -25,6 +25,8 @@
   "dueSoonDays_many": "через {{count}} дней",
   "dueSoonDays_other": "через {{count}} дня",
   "watered": "Полито",
+  "back": "Назад",
+  "detailComingSoon": "Подробная карточка растения скоро появится.",
   "addPlantHeading": "Добавить растение",
   "labelName": "Название",
   "labelInterval": "Интервал полива (дней)",

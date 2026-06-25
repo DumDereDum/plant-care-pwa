@@ -1,0 +1,51 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: var(--app-max-width);
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  /* Lift the row above the iOS home indicator. */
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+
+.item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -3px;
+  border-radius: var(--radius-md);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.label {
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.active {
+  color: var(--color-primary);
+}

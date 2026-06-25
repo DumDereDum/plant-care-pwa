@@ -133,13 +133,20 @@ interface CareLog {
   Verify: list looks per design on a phone width; cards are tappable; nothing lost from the
   old card (interval, next date, watered).
 
-- [ ] **T10.2 — Redesign "Today" screen anchor**
+- [x] **T10.2 — Redesign "Today" screen anchor** — done 2026-06-25: prominent summary
+  card as the single anchor (coral "N plants to water today" with big count / green "all
+  watered" when none due), calm overdue/today/soon buckets below using the redesigned cards,
+  friendly leaf empty state. All three states verified on mobile via screenshots.
   Task: Make the Today screen's focal element a friendly summary card ("N plants to water
   today"), the single visual anchor, with the overdue/today/soon buckets below using the new
   card + pill primitives. Encouraging empty state.
   Verify: summary card is the clear anchor; buckets correct; empty state friendly.
 
-- [ ] **T10.3 — Bottom navigation + app shell**
+- [x] **T10.3 — Bottom navigation + app shell** — done 2026-06-25: fixed bottom nav
+  (Today / Plants / Calendar / Help) with icons + labels, active state, safe-area-inset-bottom
+  padding; top nav replaced by a header (title + language switch); content padding clears the
+  nav. Calendar tab → placeholder CalendarScreen (real grid in T12.2). Verified on mobile:
+  tabs switch, tap targets 56×94px (≥44).
   Task: Replace the top button nav with a mobile bottom navigation (Today / Plants /
   Calendar / Help), respecting iOS safe-area insets (`env(safe-area-inset-*)`). Wire the
   Calendar tab to a placeholder until Phase 12.

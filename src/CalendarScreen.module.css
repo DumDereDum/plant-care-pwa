@@ -1,0 +1,28 @@
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+
+.icon {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--green-100);
+  color: var(--green-600);
+}
+
+.glyph {
+  width: 44px;
+  height: 44px;
+}
+
+.hint {
+  color: var(--color-muted);
+  max-width: 28ch;
+}

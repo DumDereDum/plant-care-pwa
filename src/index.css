@@ -71,6 +71,7 @@
 
   /* ---- Layout ---- */
   --app-max-width: 480px;
+  --bottom-nav-height: 64px;
 
   color-scheme: light dark;
   font-family: var(--font-body);
@@ -197,5 +198,6 @@ main {
   padding-top: max(var(--space-4), env(safe-area-inset-top));
   padding-left: max(var(--space-4), env(safe-area-inset-left));
   padding-right: max(var(--space-4), env(safe-area-inset-right));
-  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+  /* Clear the fixed bottom navigation (which itself adds the safe-area inset). */
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + var(--space-2));
 }

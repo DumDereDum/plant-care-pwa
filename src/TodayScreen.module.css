@@ -1,0 +1,117 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ---- Today summary: the single visual anchor ---- */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.work {
+  background: var(--coral-50);
+  color: var(--coral-900);
+}
+
+.done {
+  background: var(--green-50);
+  color: var(--green-900);
+}
+
+.summaryIcon {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+}
+
+.work .summaryIcon {
+  background: var(--coral-100);
+  color: var(--coral-600);
+}
+
+.done .summaryIcon {
+  background: var(--green-100);
+  color: var(--green-600);
+}
+
+.summarySvg {
+  width: 30px;
+  height: 30px;
+}
+
+.summaryText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.count {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.label {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+/* ---- Buckets (secondary to the anchor) ---- */
+.bucket {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bucketTitle {
+  font-size: var(--text-small);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---- Friendly empty state ---- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+
+.emptyIcon {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--green-100);
+  color: var(--green-600);
+}
+
+.emptyLeaf {
+  width: 48px;
+  height: 48px;
+}
+
+.emptyHint {
+  color: var(--color-muted);
+  max-width: 28ch;
+}

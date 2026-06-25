@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { exportData, importData } from './dataTransfer'
+import Button from './ui/Button'
+import Card from './ui/Card'
+import styles from './DataTransferPanel.module.css'
 
 interface Props {
   onImported: () => void
@@ -35,7 +38,8 @@ export default function DataTransferPanel({ onImported }: Props) {
       onImported()
     } catch (err) {
       const key =
-        err instanceof Error && ['invalidJson', 'invalidFormat', 'unsupportedVersion'].includes(err.message)
+        err instanceof Error &&
+        ['invalidJson', 'invalidFormat', 'unsupportedVersion'].includes(err.message)
           ? err.message
           : 'importError'
       setStatus({ kind: 'err', msg: t(key) })
@@ -43,18 +47,29 @@ export default function DataTransferPanel({ onImported }: Props) {
   }
 
   return (
-    <section>
-      <h2>{t('dataTransferHeading')}</h2>
-      <button onClick={handleExport}>{t('exportData')}</button>{' '}
-      <button onClick={() => fileRef.current?.click()}>{t('importData')}</button>
+    <Card className={styles.panel}>
+      <h2 className={styles.heading}>{t('dataTransferHeading')}</h2>
+
+      <div className={styles.actions}>
+        <Button onClick={handleExport}>{t('exportData')}</Button>
+        <Button variant="secondary" onClick={() => fileRef.current?.click()}>
+          {t('importData')}
+        </Button>
+      </div>
+
       <input
         ref={fileRef}
         type="file"
         accept="application/json,.json"
-        style={{ display: 'none' }}
+        hidden
         onChange={handleFileChange}
       />
-      {status && <p style={{ color: status.kind === 'err' ? 'red' : 'green' }}>{status.msg}</p>}
-    </section>
+
+      {status && (
+        <p className={`${styles.status} ${status.kind === 'ok' ? styles.statusOk : styles.statusErr}`}>
+          {status.msg}
+        </p>
+      )}
+    </Card>
   )
 }

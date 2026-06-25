@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AddPlantForm from './AddPlantForm'
 import DataTransferPanel from './DataTransferPanel'
+import InstallGuide from './InstallGuide'
 import LanguageSwitcher from './LanguageSwitcher'
 import PlantList from './PlantList'
 import TodayScreen from './TodayScreen'
 import UpdatePrompt from './UpdatePrompt'
 
-type Tab = 'today' | 'plants'
+type Tab = 'today' | 'plants' | 'help'
 
 export default function App() {
   const { t } = useTranslation()
@@ -28,6 +29,9 @@ export default function App() {
         <button onClick={() => setTab('plants')} disabled={tab === 'plants'}>
           {t('tabPlants')}
         </button>
+        <button onClick={() => setTab('help')} disabled={tab === 'help'}>
+          {t('tabHelp')}
+        </button>
       </nav>
       {tab === 'today' && (
         <TodayScreen refreshKey={refreshKey} onRefresh={refresh} />
@@ -40,6 +44,7 @@ export default function App() {
           <DataTransferPanel onImported={refresh} />
         </>
       )}
+      {tab === 'help' && <InstallGuide />}
     </main>
   )
 }

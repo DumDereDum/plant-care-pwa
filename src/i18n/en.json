@@ -38,5 +38,18 @@
   "importError": "Import failed. Please try again.",
   "invalidJson": "Invalid file: not valid JSON.",
   "invalidFormat": "Invalid file: missing required fields.",
-  "unsupportedVersion": "This backup was created by a newer version of the app and cannot be imported."
+  "unsupportedVersion": "This backup was created by a newer version of the app and cannot be imported.",
+  "tabHelp": "Help",
+  "installGuideHeading": "How to Install",
+  "installGuideIntro": "Add Plant Care to your home screen for the best experience — it works offline and opens like a native app.",
+  "installIosHeading": "iPhone / iPad (Safari)",
+  "installIosStep1": "Open this page in Safari (not Chrome or Firefox).",
+  "installIosStep2": "Tap the Share button at the bottom of the screen (the square with an arrow pointing up).",
+  "installIosStep3": "Scroll down and tap \"Add to Home Screen\".",
+  "installIosStep4": "Tap \"Add\" in the top-right corner.",
+  "installAndroidHeading": "Android (Chrome)",
+  "installAndroidStep1": "Open this page in Chrome.",
+  "installAndroidStep2": "Tap the menu button (⋮) in the top-right corner, then tap \"Install app\" or \"Add to Home Screen\".",
+  "installAndroidStep3": "Tap \"Install\" to confirm.",
+  "installGuideNote": "After installing, the app works fully offline. Your data is stored only on this device."
 }

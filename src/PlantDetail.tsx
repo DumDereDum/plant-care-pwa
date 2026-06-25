@@ -139,7 +139,10 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
 
       {face === 'front' && (
         <Card key="front" className={styles.card}>
-          <div className={styles.photo}>
+          <div
+            className={`${styles.photo}${editing ? ` ${styles.photoEditing}` : ''}`}
+            onClick={editing ? () => fileInputRef.current?.click() : undefined}
+          >
             {photoUrl ? (
               <img src={photoUrl} alt={plant.name} />
             ) : (
@@ -147,8 +150,21 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
             )}
           </div>
 
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handlePhotoChange}
+          />
+
           {editing ? (
             <form className={styles.form} onSubmit={handleSave}>
+              <div className={styles.actions}>
+                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
+                  {t(plant.photo ? 'changePhoto' : 'addPhoto')}
+                </Button>
+              </div>
               <label className={styles.field}>
                 <span className={styles.fieldLabel}>{t('labelName')}</span>
                 <input
@@ -203,13 +219,6 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   {t('flipToGuide')}
                 </Button>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handlePhotoChange}
-              />
 
               {history.length > 0 && (
                 <div className={styles.history}>

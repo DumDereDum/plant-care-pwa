@@ -44,6 +44,15 @@
   color: var(--green-700);
 }
 
+.photoEditing {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.photoEditing:hover {
+  opacity: 0.8;
+}
+
 .photo img {
   width: 100%;
   height: 100%;

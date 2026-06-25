@@ -69,7 +69,7 @@ export default function PlantCard({ plant, onWatered, onOpen }: Props) {
         <div className={styles.mainStatic}>{body}</div>
       )}
       <div className={styles.actions}>
-        <WateredButton plantId={plant.id} onRefresh={onWatered} />
+        <WateredButton plantId={plant.id} lastWateredAt={plant.lastWateredAt} onRefresh={onWatered} />
       </div>
     </Card>
   )

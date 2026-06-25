@@ -308,6 +308,7 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
                     {isSelectedPastOrToday && (
                       <WateredButton
                         plantId={plant.id}
+                        lastWateredAt={plant.lastWateredAt}
                         onRefresh={onRefresh}
                         className={styles.wateredBtn}
                       />

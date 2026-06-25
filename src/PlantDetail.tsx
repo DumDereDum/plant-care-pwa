@@ -224,7 +224,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
               )}
 
               <div className={styles.actions}>
-                <WateredButton plantId={plantId} onRefresh={onChanged} />
+                <WateredButton plantId={plantId} lastWateredAt={plant.lastWateredAt} onRefresh={onChanged} />
               </div>
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>

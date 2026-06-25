@@ -1,6 +1,8 @@
-import db, { type Plant } from './db'
+import db, { type CareGuide, type Plant } from './db'
 
-export const SCHEMA_VERSION = 1
+// Bumped to 2 with the careGuides table (DB v2). Older backups (schemaVersion 1, no
+// careGuides) still import. A backup from a NEWER app version is rejected.
+export const SCHEMA_VERSION = 2
 
 interface ExportedPlant {
   id: number
@@ -8,12 +10,15 @@ interface ExportedPlant {
   wateringIntervalDays: number
   lastWateredAt: string | null
   photo?: string // base64 data URL
+  careGuideId?: number
 }
 
 export interface ExportPayload {
   schemaVersion: number
   exportedAt: string
   plants: ExportedPlant[]
+  /** Optional so v1 backups (which have no guides) still validate and import. */
+  careGuides?: CareGuide[]
 }
 
 function blobToDataURL(blob: Blob): Promise<string> {
@@ -34,8 +39,11 @@ function dataURLToBlob(dataURL: string): Blob {
   return new Blob([bytes], { type: mime })
 }
 
-export async function exportData(): Promise<void> {
-  const plants = await db.plants.toArray()
+export async function buildExportPayload(): Promise<ExportPayload> {
+  const [plants, careGuides] = await Promise.all([
+    db.plants.toArray(),
+    db.careGuides.toArray(),
+  ])
 
   const exportedPlants: ExportedPlant[] = await Promise.all(
     plants.map(async (p) => ({
@@ -44,15 +52,20 @@ export async function exportData(): Promise<void> {
       wateringIntervalDays: p.wateringIntervalDays,
       lastWateredAt: p.lastWateredAt ? p.lastWateredAt.toISOString() : null,
       photo: p.photo ? await blobToDataURL(p.photo) : undefined,
+      careGuideId: p.careGuideId,
     })),
   )
 
-  const payload: ExportPayload = {
+  return {
     schemaVersion: SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     plants: exportedPlants,
+    careGuides,
   }
+}
 
+export async function exportData(): Promise<void> {
+  const payload = await buildExportPayload()
   const json = JSON.stringify(payload, null, 2)
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
   const a = document.createElement('a')
@@ -84,8 +97,17 @@ export async function importData(file: File): Promise<{ count: number }> {
     wateringIntervalDays: p.wateringIntervalDays,
     lastWateredAt: p.lastWateredAt ? new Date(p.lastWateredAt) : null,
     photo: p.photo ? dataURLToBlob(p.photo) : undefined,
+    careGuideId: p.careGuideId,
   }))
 
-  await db.plants.bulkPut(plants)
+  // Present only in v2+ backups; absent in v1 backups (guides left untouched).
+  const careGuides: CareGuide[] = Array.isArray(payload.careGuides) ? payload.careGuides : []
+
+  // Atomic: restore plants and guides together so references stay consistent.
+  await db.transaction('rw', db.plants, db.careGuides, async () => {
+    await db.plants.bulkPut(plants)
+    if (careGuides.length > 0) await db.careGuides.bulkPut(careGuides)
+  })
+
   return { count: plants.length }
 }

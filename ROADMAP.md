@@ -51,7 +51,7 @@ Current (v1): `Plant { id, name, wateringIntervalDays, lastWateredAt, photo? }`
 | Version | Change | Status |
 |---|---|---|
 | v1 | `plants` | ✅ shipped |
-| v2 | add `careGuides` table + `Plant.careGuideId?` | ⬜ T11.1 |
+| v2 | add `careGuides` table + `Plant.careGuideId?` | ✅ shipped (T11.1) |
 | v3 | add `careLog` table (watering history) | ⬜ T12.1 |
 
 ```ts
@@ -154,7 +154,13 @@ interface CareLog {
 
 ## Phase 11 — Plant detail + care guide (flip card)
 
-- [ ] **T11.1 — Migration v2: careGuides table (schema change)**
+- [x] **T11.1 — Migration v2: careGuides table (schema change)** — done 2026-06-25:
+  Dexie v2 (`version(2).stores(...).upgrade()`) adds standalone `careGuides` + `Plant.careGuideId?`
+  in the same `plant-care-db` (non-destructive). `CareGuide` matches the Data model above
+  (Rating 1–5, open `perks: string[]` with `PerkKey`/`KNOWN_PERKS`, `source`). Export/import
+  bumped to schemaVersion 2, includes guides, still imports v1 backups. Verified at runtime:
+  3 existing plants survived v1→v2; export→clear→import round-trips plants+guide+careGuideId;
+  v1 backup imports, future/malformed rejected.
   Task: Add the `careGuides` table and `Plant.careGuideId?` via a Dexie v2 migration
   (`version(2).stores(...).upgrade(...)`), in the SAME `plant-care-db` (do not create a
   second database, do not rename). Add the `CareGuide` interface per the Data model section,
@@ -166,7 +172,11 @@ interface CareLog {
   round-trips plants + guides; build + lint clean. **This is a schema change — call out the
   migration in the summary.**
 
-- [ ] **T11.2 — Plant detail screen (front)**
+- [x] **T11.2 — Plant detail screen (front)** — done 2026-06-25: PlantDetail upgraded from
+  placeholder to the front face — large photo/avatar, name, status + next date, Watered,
+  change-photo, and an edit mode (name + interval with Save/Cancel). Removed the "coming soon"
+  note. Verified on mobile: edit persists (name + interval, status/next recalc), Watered
+  persists. Flip to the care guide (back face) comes in T11.3.
   Task: Add a plant detail screen (front face): large photo, name, watering status + next
   date, "Watered" button, change-photo, and edit name/interval. Reached by tapping a card in
   the list. All strings via i18n.

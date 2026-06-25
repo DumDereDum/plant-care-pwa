@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { compressImage } from './compressImage'
 import db, { type Plant } from './db'
@@ -17,14 +17,13 @@ interface Props {
   onChanged: () => void
 }
 
-/**
- * Placeholder plant detail screen (T10.1). It already hosts the controls moved off
- * the list card — photo add/change and watering — so nothing is lost. T11.2 turns this
- * into the full detail view (edit, care-guide flip, history).
- */
+/** Plant detail — front face. T11.3 adds the flip to the care guide (back face). */
 export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const [plant, setPlant] = useState<Plant | undefined>()
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState('')
+  const [intervalDays, setIntervalDays] = useState(7)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -32,10 +31,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   }, [plantId, refreshKey])
 
   const photo = plant?.photo
-  const photoUrl = useMemo(
-    () => (photo ? URL.createObjectURL(photo) : null),
-    [photo],
-  )
+  const photoUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
   if (!plant) return null
@@ -59,6 +55,25 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
       // unreadable file — ignore
     }
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function startEditing() {
+    if (!plant) return
+    setName(plant.name)
+    setIntervalDays(plant.wateringIntervalDays)
+    setEditing(true)
+  }
+
+  async function handleSave(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = name.trim()
+    if (!trimmed) return
+    await db.plants.update(plantId, {
+      name: trimmed,
+      wateringIntervalDays: Math.max(1, Math.round(intervalDays)),
+    })
+    setEditing(false)
+    onChanged()
   }
 
   const statusText = !plant.lastWateredAt
@@ -86,31 +101,68 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
           )}
         </div>
 
-        <h2>{plant.name}</h2>
-        <StatusPill tone={statusTone}>{statusText}</StatusPill>
+        {editing ? (
+          <form className={styles.form} onSubmit={handleSave}>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>{t('labelName')}</span>
+              <input
+                className={styles.input}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoFocus
+              />
+            </label>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>{t('labelInterval')}</span>
+              <input
+                className={styles.input}
+                type="number"
+                min={1}
+                value={intervalDays}
+                onChange={(e) => setIntervalDays(Number(e.target.value))}
+                required
+              />
+            </label>
+            <div className={styles.actions}>
+              <Button type="submit">{t('save')}</Button>
+              <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
+                {t('cancel')}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <h2>{plant.name}</h2>
+            <StatusPill tone={statusTone}>{statusText}</StatusPill>
 
-        <div className={styles.meta}>
-          {t('waterEvery', { count: plant.wateringIntervalDays })}
-        </div>
-        {nextDate && (
-          <div className={styles.meta}>{t('nextWatering', { date: fmt(nextDate) })}</div>
+            <div className={styles.meta}>
+              {t('waterEvery', { count: plant.wateringIntervalDays })}
+            </div>
+            {nextDate && (
+              <div className={styles.meta}>{t('nextWatering', { date: fmt(nextDate) })}</div>
+            )}
+
+            <div className={styles.actions}>
+              <Button onClick={handleWatered}>{t('watered')}</Button>
+            </div>
+            <div className={styles.actions}>
+              <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+                {t(plant.photo ? 'changePhoto' : 'addPhoto')}
+              </Button>
+              <Button variant="secondary" onClick={startEditing}>
+                {t('edit')}
+              </Button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handlePhotoChange}
+            />
+          </>
         )}
-
-        <div className={styles.actions}>
-          <Button onClick={handleWatered}>{t('watered')}</Button>
-          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-            {t(plant.photo ? 'changePhoto' : 'addPhoto')}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handlePhotoChange}
-          />
-        </div>
-
-        <p className={styles.note}>{t('detailComingSoon')}</p>
       </Card>
     </div>
   )

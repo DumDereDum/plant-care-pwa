@@ -25,3 +25,11 @@
 .bar[data-icon='drop'] .filled {
   color: var(--green-500);
 }
+
+.bar[data-icon='wave'] .filled {
+  color: #4ab3d4;
+}
+
+.bar[data-icon='star'] .filled {
+  color: #9b7bd4;
+}

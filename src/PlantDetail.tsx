@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import CareGuideFace from './CareGuideFace'
 import { compressImage } from './compressImage'
-import db, { type Plant } from './db'
+import db, { type CareGuide, type Plant } from './db'
 import Button from './ui/Button'
 import Card from './ui/Card'
 import StatusPill from './ui/StatusPill'
@@ -17,10 +18,13 @@ interface Props {
   onChanged: () => void
 }
 
-/** Plant detail — front face. T11.3 adds the flip to the care guide (back face). */
+type Face = 'front' | 'back'
+
 export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const [plant, setPlant] = useState<Plant | undefined>()
+  const [guide, setGuide] = useState<CareGuide | null>(null)
+  const [face, setFace] = useState<Face>('front')
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
@@ -29,6 +33,18 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   useEffect(() => {
     db.plants.get(plantId).then(setPlant)
   }, [plantId, refreshKey])
+
+  useEffect(() => {
+    async function load() {
+      if (plant?.careGuideId != null) {
+        const g = await db.careGuides.get(plant.careGuideId)
+        setGuide(g ?? null)
+      } else {
+        setGuide(null)
+      }
+    }
+    load()
+  }, [plant?.careGuideId])
 
   const photo = plant?.photo
   const photoUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
@@ -92,78 +108,91 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
         {t('back')}
       </Button>
 
-      <Card className={styles.card}>
-        <div className={styles.photo}>
-          {photoUrl ? (
-            <img src={photoUrl} alt={plant.name} />
-          ) : (
-            <LeafIcon className={styles.leaf} />
-          )}
-        </div>
-
-        {editing ? (
-          <form className={styles.form} onSubmit={handleSave}>
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>{t('labelName')}</span>
-              <input
-                className={styles.input}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                autoFocus
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.fieldLabel}>{t('labelInterval')}</span>
-              <input
-                className={styles.input}
-                type="number"
-                min={1}
-                value={intervalDays}
-                onChange={(e) => setIntervalDays(Number(e.target.value))}
-                required
-              />
-            </label>
-            <div className={styles.actions}>
-              <Button type="submit">{t('save')}</Button>
-              <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
-                {t('cancel')}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <h2>{plant.name}</h2>
-            <StatusPill tone={statusTone}>{statusText}</StatusPill>
-
-            <div className={styles.meta}>
-              {t('waterEvery', { count: plant.wateringIntervalDays })}
-            </div>
-            {nextDate && (
-              <div className={styles.meta}>{t('nextWatering', { date: fmt(nextDate) })}</div>
+      {face === 'front' ? (
+        <Card key="front" className={styles.card}>
+          <div className={styles.photo}>
+            {photoUrl ? (
+              <img src={photoUrl} alt={plant.name} />
+            ) : (
+              <LeafIcon className={styles.leaf} />
             )}
+          </div>
 
-            <div className={styles.actions}>
-              <Button onClick={handleWatered}>{t('watered')}</Button>
-            </div>
-            <div className={styles.actions}>
-              <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                {t(plant.photo ? 'changePhoto' : 'addPhoto')}
-              </Button>
-              <Button variant="secondary" onClick={startEditing}>
-                {t('edit')}
-              </Button>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handlePhotoChange}
-            />
-          </>
-        )}
-      </Card>
+          {editing ? (
+            <form className={styles.form} onSubmit={handleSave}>
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>{t('labelName')}</span>
+                <input
+                  className={styles.input}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>{t('labelInterval')}</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min={1}
+                  value={intervalDays}
+                  onChange={(e) => setIntervalDays(Number(e.target.value))}
+                  required
+                />
+              </label>
+              <div className={styles.actions}>
+                <Button type="submit">{t('save')}</Button>
+                <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
+                  {t('cancel')}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <h2>{plant.name}</h2>
+              <StatusPill tone={statusTone}>{statusText}</StatusPill>
+
+              <div className={styles.meta}>
+                {t('waterEvery', { count: plant.wateringIntervalDays })}
+              </div>
+              {nextDate && (
+                <div className={styles.meta}>{t('nextWatering', { date: fmt(nextDate) })}</div>
+              )}
+
+              <div className={styles.actions}>
+                <Button onClick={handleWatered}>{t('watered')}</Button>
+              </div>
+              <div className={styles.actions}>
+                <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+                  {t(plant.photo ? 'changePhoto' : 'addPhoto')}
+                </Button>
+                <Button variant="secondary" onClick={startEditing}>
+                  {t('edit')}
+                </Button>
+                <Button variant="secondary" onClick={() => setFace('back')}>
+                  {t('flipToGuide')}
+                </Button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handlePhotoChange}
+              />
+            </>
+          )}
+        </Card>
+      ) : (
+        <Card key="back" className={styles.card}>
+          <CareGuideFace
+            guide={guide}
+            onFlip={() => setFace('front')}
+            onFillIn={() => setFace('front')}
+          />
+        </Card>
+      )}
     </div>
   )
 }

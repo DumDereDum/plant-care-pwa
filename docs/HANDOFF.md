@@ -1,133 +1,84 @@
 # Handoff — Plant Care PWA
 
-## Status
+Resume file for a fresh session. Read this together with `CLAUDE.md`, `ROADMAP.md`
+(the live task list + progress), `DESIGN.md`, and `PROJECT_CONTEXT.md`.
 
-**Branch:** `main`  
-**Build:** passes (`npm run build` + `npm run lint` both clean)  
-**Uncommitted work:** photo feature (5 files changed but not staged — see below)
+## Status (2026-06-25)
 
-```
-modified:   src/AddPlantForm.tsx
-modified:   src/PlantCard.tsx
-modified:   src/i18n/en.json
-modified:   src/i18n/ru.json
-untracked:  src/compressImage.ts
-```
+- **Working tree: clean. Everything is committed** (latest commit `b7900ab "plant details"`).
+- **MVP is done** (original Phases 1–8 in `BUILD_PLAN.md`: PWA, Dexie, i18n, watering,
+  photos, export/import, install guide).
+- We are now in the **post-MVP redesign + features** phase, tracked task-by-task in
+  **`ROADMAP.md`**. That file is the source of truth for what's done and what's next —
+  the agent ticks each task there on completion.
 
-Commit these first before starting the next task.
+## How to resume
 
----
+1. Read `CLAUDE.md` (hard rules) and `ROADMAP.md` (tasks + progress).
+2. Paste the next unchecked task from `ROADMAP.md` into the chat. One task per turn.
+3. Verify per the task's "Verify" line, commit, tick the box.
 
-## Done — Phases 1–4 complete
+**Next task: `T11.3` — flip the plant detail to the care-guide back face** (suns/drops 1–5
+for light/water/humidity/difficulty via `StatBar`, perk badges, toxicity). See `ROADMAP.md`
+Phase 11.
 
-| Phase | Commit | What it delivered |
-|---|---|---|
-| 1 — CI/CD | `65f5121` | GitHub Actions workflow; `vite.config.ts` base set to `/plant-care-pwa/` |
-| 2 — Data layer | `be8fc1e` | Dexie (`plant-care-db` v1), `Plant` model, `PlantList`, `AddPlantForm` |
-| 3 — i18n | `ce6e05d` | react-i18next, EN + RU locales, RU plural forms, `LanguageSwitcher`, localStorage persistence |
-| 4 — PWA | `9305362` | vite-plugin-pwa, web manifest, Workbox offline precache, `UpdatePrompt` (explicit update button) |
+## Done this phase (all committed)
 
-All four phases are stable and have been deployed (origin/main is up to date).
-
----
-
-## In Progress — Phase 5: App features
-
-### Committed sub-task: watering cycle (`46c2d83 add watering`)
-
-- `src/watering.ts` — pure functions: `nextWateringDate(plant)` and `daysUntilWatering(plant)` (returns negative/0/positive; never-watered plants → 0)
-- `src/PlantCard.tsx` — card showing name, photo slot, interval, next-watering date, status text, **Watered** button (writes `lastWateredAt = now` to IndexedDB)
-- `src/TodayScreen.tsx` — three buckets: **Overdue** (days < 0), **Due today** (days = 0, incl. never-watered), **Due soon** (days > 0)
-- `src/PlantList.tsx` — replaced inline `<li>` text with `PlantCard`; added `onRefresh` prop
-- `src/App.tsx` — two-tab nav ("Today" / "My Plants"), unified `refresh` callback, removed old `plantsHeading` h2
-- i18n keys added: `tabToday`, `tabPlants`, `overdueHeading`, `dueTodayHeading`, `dueSoonHeading`, `nextWatering`, `neverWatered`, `dueToday`, `overdueDays`, `dueSoonDays`, `watered` (all with RU plural forms)
-
-### Uncommitted sub-task: photo compression (working directory only)
-
-- `src/compressImage.ts` *(new)* — `compressImage(file: File): Promise<Blob>`: loads via `<img>`, draws to canvas scaled to max 1024px longest-side, encodes WebP (falls back to JPEG if `blob.type !== 'image/webp'`, e.g. Safari < 17)
-- `src/AddPlantForm.tsx` — file input (`accept="image/*"`), compresses before storing, shows object-URL preview, resets input ref on submit
-- `src/PlantCard.tsx` — hidden file input behind a `<label>` ("Add photo" / "Change photo"); compress + `db.plants.update` on pick; `useMemo` creates object URL, `useEffect` revokes it on cleanup
-- `src/i18n/{en,ru}.json` — added `labelPhoto`, `addPhoto`, `changePhoto`
-
-**Where Phase 5 stops:** photos are functionally complete but uncommitted. The next two MVP requirements have not been started at all.
-
----
-
-## Next Steps (to finish Phase 5 / reach MVP)
-
-1. **Commit the photo work** — stage the 5 files above, write a commit.
-
-2. **Data export / import (JSON)** — CLAUDE.md requires this as an explicit MVP item.  
-   - Export: `JSON.stringify(await db.plants.toArray())` with Blob photos serialised as base64 data-URLs (use `FileReader.readAsDataURL`), then `URL.createObjectURL(new Blob([json]))` + `<a download>` trigger.  
-   - Import: file input → parse JSON → deserialise base64 back to Blob → `db.plants.bulkPut(...)` (not bulkAdd, so re-import is idempotent).  
-   - Add to "My Plants" tab; add i18n keys `exportData` / `importData`.
-
-3. **Install guide for iPhone / Android** — CLAUDE.md lists this as an MVP item.  
-   - A simple static page or collapsible section explaining: iOS: Share → Add to Home Screen; Android: browser menu → Install.  
-   - Add a "How to install" link/button visible on first visit (can be dismissed, persist dismissal in localStorage).
-
-4. **Basic styling** — the app is functional but completely unstyled. Not a hard MVP blocker, but a usability prerequisite for real testing. Scope it as a separate task.
-
-5. **End-to-end smoke test on GitHub Pages** — push, let CI deploy, verify SW registers, offline works, install prompt appears.
-
----
-
-## Key Decisions Made
-
-| Decision | Why |
+| Task | What shipped |
 |---|---|
-| `registerType: 'prompt'` for SW | CLAUDE.md mandates explicit user-triggered update; no silent reload |
-| `useMemo` for object URLs + cleanup `useEffect` | `react-hooks/set-state-in-effect` lint rule blocks `useState` + `useEffect` for URL creation; `useMemo` is synchronous so no setState in effect |
-| WebP with JPEG fallback in `compressImage` | Safari < 17 silently returns PNG when asked for WebP; code checks `blob.type === 'image/webp'` and re-encodes to JPEG rather than accepting the PNG |
-| Never-watered plants → `daysUntil = 0` (Due today) | Consistent UX: a plant with no history should prompt immediate action, not wait an interval |
-| `onWatered` prop kept for photo-change callback | Renaming would require touching TodayScreen + PlantList for zero user-visible gain; both actions just trigger a data refresh |
-| No `i18next-browser-languagedetector` dependency | Language detection is 3 lines with `navigator.language`; CLAUDE.md says no library if built-ins suffice |
+| T9.1 | Design tokens + self-hosted fonts + reset/app shell |
+| T9.2 | UI primitives `src/ui/`: Card, Button, StatusPill, StatBar, icons |
+| T10.1 | Redesigned "My Plants" list (avatar cards) + tap → PlantDetail |
+| T10.2 | "Today" screen anchor summary + buckets + empty state |
+| T10.3 | Bottom navigation + app shell (safe-area), Calendar placeholder |
+| T11.1 | **DB v2 migration**: `careGuides` table + `Plant.careGuideId`; export/import v2 |
+| T11.2 | Plant detail front face: photo, name, status, watered, change-photo, edit name/interval |
 
----
+## Key decisions / non-obvious facts (a fresh session won't know these)
 
-## Files and What Changed
+- **Styling:** plain CSS + CSS custom properties (tokens from `DESIGN.md`), **CSS Modules**
+  per component (`*.module.css`). **No Tailwind** (minimal-deps rule; `vite/client` types
+  make CSS modules type-check).
+- **Fonts:** display = **Comfortaa** (replaced Fredoka, which has NO Cyrillic — the UI is
+  bilingual). Body = Nunito Sans. Both **self-hosted** as variable woff2 (latin+cyrillic) in
+  `src/assets/fonts/`, imported via `src/fonts.css`, and **precached** (`woff2` added to the
+  Workbox `globPatterns` in `vite.config.ts`). No Google Fonts CDN at runtime (offline).
+- **DB v2 / care guides** (`src/db.ts`): `careGuides` is a **standalone, reusable** table
+  (no `plantId`) so a catalog can seed it; plants link via `Plant.careGuideId`. `CareGuide`
+  uses `Rating = 1..5` for light/water/humidity/difficulty, an **open `perks: string[]`**
+  (`PerkKey`/`KNOWN_PERKS` document the known ones; **toxicity is modelled as perks** —
+  `toxicCats`/`toxicDogs`/`unsafeChildren`), and `source: 'user' | 'catalog'`. There is **no
+  `petToxic` boolean** (it was removed to match the refined model in `ROADMAP.md`).
+- **`StatBar` exists but is NOT wired into any screen yet** — T11.3 is the first task with
+  real rating data; wire it there.
+- **Photo editing** for existing plants now lives on the **detail screen** (`PlantDetail`),
+  not the list card. New-plant photos still come from `AddPlantForm`.
+- **Navigation/state** lives in `App.tsx`: `tab` (today/plants/calendar/help) + `detailId`
+  (open plant). Changing tab clears the detail. No router (no HashRouter).
+- **Placeholders still to build:** `CalendarScreen` (real month grid = T12.2), and the
+  PlantDetail **flip / back face** (care guide = T11.3).
+- **Open question for T11.3:** how to show "pet-safe" (cat-in-heart). Only negative toxicity
+  perks exist, so "safe" must be derived (e.g. guide is filled AND no toxic perks → show
+  safe; otherwise unknown). Decide this when building T11.3.
 
-```
-src/
-  compressImage.ts      NEW  Resize + WebP/JPEG encode, no deps, ~40 lines
-  watering.ts           NEW  nextWateringDate(), daysUntilWatering() — pure, no React
-  PlantCard.tsx         NEW→modified  Card UI, Watered button, photo add/change
-  TodayScreen.tsx       NEW  Three-bucket watering dashboard
-  AddPlantForm.tsx      modified  Added photo file input, preview, compress-before-store
-  PlantList.tsx         modified  Now renders PlantCard; added onRefresh prop
-  App.tsx               modified  Two-tab nav (Today / My Plants)
-  db.ts                 unchanged  Plant model has photo?: Blob — no schema migration needed
-  i18n/en.json          modified  +15 keys this session
-  i18n/ru.json          modified  +15 keys, all with _one/_few/_many/_other variants
-  i18n/index.ts         unchanged
-  LanguageSwitcher.tsx  unchanged
-  UpdatePrompt.tsx      unchanged
+## Dev & verification workflow (important quirks)
 
-public/
-  pwa-192x192.png       NEW  Solid green placeholder (generated by Node script, no tool dep)
-  pwa-512x512.png       NEW  Same, 512×512
+- **Preview server:** `.claude/launch.json` runs `npm run dev` on **port 5180** (the user
+  keeps their own dev server on 5173 — do not fight it). Start with `preview_start "dev"`.
+- **Seeding test data:** the preview origin (`localhost:5180`) has its own IndexedDB. Seed
+  via `preview_eval` raw IndexedDB (open `plant-care-db`, write to `plants`/`careGuides`),
+  then `location.reload()`. Screenshot at **mobile** preset (375×812).
+- **React state reads are async:** don't read `aria-current`/DOM state in the SAME eval right
+  after a `.click()` — it shows stale values. Drive multi-step flows across separate calls,
+  or use `preview_fill` / `preview_click` (trusted events).
+- **Occasional preview state resets** (the open detail "forgets") — re-drive the flow; not a
+  code bug.
+- **DB:** name is `plant-care-db` (never rename), current Dexie version **2**
+  (IndexedDB version shows as 20 = Dexie 2 ×10).
 
-.github/workflows/
-  deploy.yml            NEW  build → upload-pages-artifact → deploy-pages on push to main
+## Guardrails (from CLAUDE.md — do not violate)
 
-vite.config.ts          modified  base + VitePWA plugin config
-tsconfig.app.json       modified  Added "vite-plugin-pwa/client" to types array
-```
-
----
-
-## Gotchas / Non-Obvious Things
-
-- **Dexie deserialises Blobs as new instances** on every `toArray()`. Two `plant.photo` Blobs from successive fetches will never be `===` equal even if the data is identical. This means `useMemo([plant.photo])` recomputes on every refresh — object URLs are recreated and revoked each time. Acceptable for MVP but worth noting if performance matters.
-
-- **`canvas.toBlob` with `'image/webp'` on Safari < 17 silently falls back to PNG**, not JPEG. If you just check `if (blob)` you'll store a large PNG. The fix is `if (blob?.type === 'image/webp')`.
-
-- **PWA icons are solid green placeholders** (`#3a7d44`). They satisfy the manifest spec (installable), but they need real artwork before the app is shown to real users.
-
-- **Duplicate entries in SW precache** — `favicon.svg` and the two PNGs appear twice in the Workbox manifest because both `includeAssets` and `globPatterns` match them. Harmless (Workbox deduplicates at runtime); fix by dropping `includeAssets` from `vite.config.ts` if it annoys you.
-
-- **`apple-touch-icon` is missing from `index.html`**. iOS Safari ignores the manifest `icons` array; the home-screen icon will be a screenshot until a `<link rel="apple-touch-icon">` tag is added.
-
-- **`react-hooks/set-state-in-effect`** is enabled in this project's ESLint config. Any `useEffect` that calls `setState` synchronously in its body will fail lint. Use `useMemo` for derived values that need cleanup (object URLs), and only use `useEffect` for the revocation cleanup.
-
-- **`lastWatered` i18n key exists but is no longer rendered** — it was in the old PlantList inline template. PlantCard now shows `nextWatering` instead. The key is harmless dead weight; remove it during a locale cleanup pass.
+PWA-only; no backend / no native / no app store / no external storage. All data in
+IndexedDB. Bilingual EN/RU — every user-facing string via i18n (RU plural forms). Schema
+changes ONLY via incremented Dexie `version(n).stores().upgrade()`; never break export/import
+(update it in the same task). GitHub Pages base `/plant-care-pwa/`; SW update is explicit.

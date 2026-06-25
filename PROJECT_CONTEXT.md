@@ -6,11 +6,14 @@ detailed specs; this file captures the decisions, working practices, and current
 
 ## Where we are
 
-- The build follows `docs/BUILD_PLAN.md` (8 phases).
-- Done: Phases 1–6 — GitHub Pages deploy, Dexie data layer, i18n (RU/EN), installable
-  PWA, watering cycle, photos.
-- In progress: Phase 7 — export / import.
-- Next: Phase 8 — install guide. Then the design pass (see below).
+- The MVP (original `BUILD_PLAN.md`, 8 phases) is **done**: GitHub Pages deploy, Dexie data
+  layer, i18n (RU/EN), installable PWA, watering cycle, photos, export/import, install guide.
+- We are now in the **post-MVP redesign + features** phase, tracked task-by-task in
+  **`ROADMAP.md`** (the live progress file — the agent ticks tasks there).
+- Done so far: design foundation + UI primitives (T9.x), screen redesign + bottom nav
+  (T10.x), DB v2 `careGuides` migration (T11.1), plant detail front face (T11.2).
+- **Next: T11.3** — flip the plant detail to the care-guide back face.
+- See **`docs/HANDOFF.md`** for the full resume brief (decisions, dev/verify quirks).
 
 ## Source-of-truth files
 
@@ -68,8 +71,10 @@ detailed specs; this file captures the decisions, working practices, and current
 
 ## Next steps
 
-1. Finish Phase 7 (export/import); do Phase 8 (install guide).
-2. Run the design foundation prompt; iterate the home screen via the screenshot loop.
-3. Restyle remaining screens one at a time (plant detail card, "today" screen).
-4. Add the design rules above to the reviewer subagent.
-5. Post-MVP: care history view, sorting, themes.
+Work the tasks in `ROADMAP.md` top to bottom (one per turn, commit, tick the box):
+
+1. **T11.3** — plant detail flip to the care-guide back face (suns/drops 1–5, perks, toxicity).
+2. **T11.4** — care-guide edit form (fill in the placeholder fields).
+3. **Phase 12** — DB v3 `careLog` (watering history) + the real Calendar month grid.
+4. **Phase 13** — micro-interactions, on-brand empty/loading/error states, real app icons,
+   achievements/medals, locale cleanup.

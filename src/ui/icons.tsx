@@ -82,3 +82,101 @@ export function HelpIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function WaveIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M2 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
+      <path d="M2 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
+    </svg>
+  )
+}
+
+export function StarIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M12 2l2.5 7.5H22l-6.5 4.8 2.5 7.7L12 17.5l-6 4.5 2.5-7.7L2 9.5h7.5L12 2z" />
+    </svg>
+  )
+}
+
+export function ThermometerIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+    </svg>
+  )
+}
+
+export function PawIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <ellipse cx="8" cy="6.5" rx="1.6" ry="2.2" />
+      <ellipse cx="14" cy="5.5" rx="1.6" ry="2.2" />
+      <ellipse cx="4.5" cy="11" rx="2.2" ry="1.6" />
+      <ellipse cx="17.5" cy="11" rx="2.2" ry="1.6" />
+      <path d="M12 10c-2.5 0-5.5 2-5.5 4.5 0 2 2.3 3.5 5.5 3.5s5.5-1.5 5.5-3.5C17.5 12 14.5 10 12 10z" />
+    </svg>
+  )
+}
+
+export function ChildIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <circle cx="12" cy="5" r="2.5" />
+      <path d="M7 10.5C7 8.6 9.2 7 12 7s5 1.6 5 3.5V16h-3v5h-4v-5H7v-5.5z" />
+    </svg>
+  )
+}
+
+export function FlowerIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <circle cx="12" cy="12" r="2.5" />
+      <ellipse cx="12" cy="5.5" rx="1.5" ry="2.5" />
+      <ellipse cx="12" cy="18.5" rx="1.5" ry="2.5" />
+      <ellipse cx="5.5" cy="12" rx="2.5" ry="1.5" />
+      <ellipse cx="18.5" cy="12" rx="2.5" ry="1.5" />
+      <ellipse cx="7.5" cy="7.5" rx="1.5" ry="2.5" transform="rotate(-45 7.5 7.5)" />
+      <ellipse cx="16.5" cy="7.5" rx="1.5" ry="2.5" transform="rotate(45 16.5 7.5)" />
+      <ellipse cx="7.5" cy="16.5" rx="1.5" ry="2.5" transform="rotate(45 7.5 16.5)" />
+      <ellipse cx="16.5" cy="16.5" rx="1.5" ry="2.5" transform="rotate(-45 16.5 16.5)" />
+    </svg>
+  )
+}
+
+export function WindIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M3 8h10a3 3 0 1 0-3-3" />
+      <path d="M3 12h14a3 3 0 1 1-3 3" />
+      <path d="M3 16h6a2 2 0 1 1-2 2" />
+    </svg>
+  )
+}
+
+export function SparkleIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M12 2l1.8 5.5H19l-4.6 3.4 1.8 5.6-4.2-3-4.2 3 1.8-5.6L5 7.5h5.2L12 2z" />
+      <circle cx="19.5" cy="4" r="1.5" />
+      <circle cx="4.5" cy="19.5" r="1.5" />
+    </svg>
+  )
+}
+
+export function DustIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="5.5" cy="8" r="1.5" />
+      <circle cx="18.5" cy="8" r="1.5" />
+      <circle cx="5.5" cy="16" r="1.5" />
+      <circle cx="18.5" cy="16" r="1.5" />
+      <circle cx="12" cy="4" r="1" />
+      <circle cx="12" cy="20" r="1" />
+      <circle cx="4" cy="12" r="1" />
+      <circle cx="20" cy="12" r="1" />
+    </svg>
+  )
+}

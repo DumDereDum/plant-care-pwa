@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { DropIcon, SunIcon } from './icons'
+import { DropIcon, StarIcon, SunIcon, WaveIcon } from './icons'
 import styles from './StatBar.module.css'
 
-const ICONS = { sun: SunIcon, drop: DropIcon } as const
+const ICONS = { sun: SunIcon, drop: DropIcon, wave: WaveIcon, star: StarIcon } as const
 
 export type StatIcon = keyof typeof ICONS
 

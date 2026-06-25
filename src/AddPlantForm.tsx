@@ -82,17 +82,23 @@ export default function AddPlantForm({ onAdded }: Props) {
           />
         </label>
 
-        <label className={styles.field}>
-          <span className={styles.fieldLabel}>{t('labelInterval')}</span>
+        <div className={styles.field}>
+          <div className={styles.sliderHeader}>
+            <span className={styles.fieldLabel}>{t('labelInterval')}</span>
+            <span className={styles.sliderValue}>{t('waterEvery', { count: intervalDays })}</span>
+          </div>
           <input
-            className={styles.input}
-            type="number"
+            className={styles.slider}
+            type="range"
             min={1}
+            max={60}
             value={intervalDays}
             onChange={(e) => setIntervalDays(Number(e.target.value))}
-            required
+            style={{
+              background: `linear-gradient(to right, var(--color-primary) ${((intervalDays - 1) / 59) * 100}%, var(--color-border) ${((intervalDays - 1) / 59) * 100}%)`,
+            }}
           />
-        </label>
+        </div>
 
         <div className={styles.actions}>
           <Button type="submit">{t('submitAdd')}</Button>

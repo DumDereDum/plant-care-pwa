@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import db, { type Plant } from './db'
+import { computeCurrentStreak, computeScore } from './achievements'
+import db, { type CareLog, type Plant } from './db'
 import PlantCard from './PlantCard'
+import ScreenState from './ui/ScreenState'
 import { DropIcon, LeafIcon } from './ui/icons'
 import { daysUntilWatering } from './watering'
 import styles from './TodayScreen.module.css'
@@ -36,10 +38,41 @@ function Bucket({
 export default function TodayScreen({ refreshKey, onRefresh }: Props) {
   const { t } = useTranslation()
   const [plants, setPlants] = useState<Plant[]>([])
+  const [allLogs, setAllLogs] = useState<CareLog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    db.plants.toArray().then(setPlants)
+    Promise.all([db.plants.toArray(), db.careLogs.toArray()])
+      .then(([plantsData, logsData]) => {
+        setPlants(plantsData)
+        setAllLogs(logsData)
+        setLoading(false)
+      })
+      .catch(() => { setError(true); setLoading(false) })
   }, [refreshKey])
+
+  const globalStats = useMemo(() => {
+    if (plants.length === 0) return null
+    const logsByPlant = new Map<number, CareLog[]>()
+    for (const log of allLogs) {
+      const arr = logsByPlant.get(log.plantId) ?? []
+      arr.push(log)
+      logsByPlant.set(log.plantId, arr)
+    }
+    let totalScore = 0
+    let bestStreak = 0
+    for (const plant of plants) {
+      const logs = logsByPlant.get(plant.id) ?? []
+      totalScore += computeScore(logs, plant.wateringIntervalDays)
+      const s = computeCurrentStreak(logs, plant)
+      if (s > bestStreak) bestStreak = s
+    }
+    return { totalScore, bestStreak }
+  }, [plants, allLogs])
+
+  if (loading) return <ScreenState kind="loading" />
+  if (error) return <ScreenState kind="error" onRetry={onRefresh} />
 
   if (plants.length === 0) {
     return (
@@ -76,6 +109,12 @@ export default function TodayScreen({ refreshKey, onRefresh }: Props) {
             </>
           ) : (
             <span className={styles.label}>{t('summaryAllDone')}</span>
+          )}
+          {globalStats && globalStats.totalScore > 0 && (
+            <span className={styles.scoreHint}>
+              {t('summaryScore', { score: globalStats.totalScore })}
+              {globalStats.bestStreak >= 2 && ` · ${t('summaryStreak', { count: globalStats.bestStreak })}`}
+            </span>
           )}
         </div>
       </div>

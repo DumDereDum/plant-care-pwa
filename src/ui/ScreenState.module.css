@@ -1,0 +1,82 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-10, 64px) var(--space-4);
+}
+
+/* ── Spinner ── */
+
+.spinner {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: scSpin 0.75s linear infinite;
+  }
+}
+
+@keyframes scSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error ── */
+
+.iconWrap {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--coral-50);
+  color: var(--coral-600);
+  flex-shrink: 0;
+}
+
+.alertIcon {
+  width: 36px;
+  height: 36px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  color: var(--color-text);
+}
+
+.hint {
+  font-size: var(--text-small);
+  color: var(--color-muted);
+  max-width: 26ch;
+}
+
+.retryBtn {
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-5);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 700;
+  font-size: var(--text-small);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.retryBtn:hover {
+  background: var(--green-50);
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

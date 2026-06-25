@@ -24,3 +24,9 @@
   background: var(--amber-50);
   color: var(--amber-900);
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .pill {
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+}

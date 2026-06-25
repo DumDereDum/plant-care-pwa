@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type Plant } from './db'
-import Button from './ui/Button'
 import Card from './ui/Card'
 import StatusPill from './ui/StatusPill'
 import { LeafIcon } from './ui/icons'
-import { daysUntilWatering, nextWateringDate, recordWatering } from './watering'
+import WateredButton from './WateredButton'
+import { daysUntilWatering, nextWateringDate } from './watering'
 import styles from './PlantCard.module.css'
 
 interface Props {
@@ -27,11 +27,6 @@ export default function PlantCard({ plant, onWatered, onOpen }: Props) {
   const days = daysUntilWatering(plant)
   const nextDate = nextWateringDate(plant)
   const fmt = (d: Date) => new Intl.DateTimeFormat(i18n.resolvedLanguage).format(d)
-
-  async function handleWatered() {
-    await recordWatering(plant.id)
-    onWatered()
-  }
 
   const statusText = !plant.lastWateredAt
     ? t('neverWatered')
@@ -73,7 +68,7 @@ export default function PlantCard({ plant, onWatered, onOpen }: Props) {
         <div className={styles.mainStatic}>{body}</div>
       )}
       <div className={styles.actions}>
-        <Button onClick={handleWatered}>{t('watered')}</Button>
+        <WateredButton plantId={plant.id} onRefresh={onWatered} />
       </div>
     </Card>
   )

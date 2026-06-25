@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { computeAchievements } from './achievements'
 import CareGuideFace from './CareGuideFace'
 import CareGuideEditForm from './CareGuideEditForm'
 import { compressImage } from './compressImage'
+import WateredButton from './WateredButton'
 import db, { type CareGuide, type CareLog, type Plant } from './db'
+import AchievementsPanel from './ui/AchievementsPanel'
 import Button from './ui/Button'
 import Card from './ui/Card'
+import ScreenState from './ui/ScreenState'
 import StatusPill from './ui/StatusPill'
 import { DropIcon, LeafIcon } from './ui/icons'
-import { daysUntilWatering, nextWateringDate, recordWatering } from './watering'
+import { daysUntilWatering, nextWateringDate } from './watering'
 import styles from './PlantDetail.module.css'
 
 interface Props {
@@ -24,8 +28,10 @@ type Face = 'front' | 'back' | 'edit'
 export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const [plant, setPlant] = useState<Plant | undefined>()
+  const [plantLoading, setPlantLoading] = useState(true)
+  const [plantError, setPlantError] = useState(false)
   const [guide, setGuide] = useState<CareGuide | null>(null)
-  const [history, setHistory] = useState<CareLog[]>([])
+  const [allLogs, setAllLogs] = useState<CareLog[]>([])
   const [face, setFace] = useState<Face>('front')
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
@@ -33,7 +39,9 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    db.plants.get(plantId).then(setPlant)
+    db.plants.get(plantId)
+      .then((p) => { setPlant(p); setPlantLoading(false) })
+      .catch(() => { setPlantError(true); setPlantLoading(false) })
   }, [plantId, refreshKey])
 
   useEffect(() => {
@@ -41,9 +49,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
       .where('plantId').equals(plantId)
       .toArray()
       .then((logs) =>
-        setHistory(
-          logs.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5),
-        ),
+        setAllLogs(logs.sort((a, b) => b.date.getTime() - a.date.getTime())),
       )
   }, [plantId, refreshKey])
 
@@ -63,16 +69,18 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   const photoUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
-  if (!plant) return null
+  const history = useMemo(() => allLogs.slice(0, 5), [allLogs])
+  const achievements = useMemo(
+    () => (plant ? computeAchievements(allLogs, plant) : null),
+    [allLogs, plant],
+  )
+
+  if (plantLoading) return <ScreenState kind="loading" />
+  if (plantError || !plant) return <ScreenState kind="error" onRetry={onChanged} />
 
   const days = daysUntilWatering(plant)
   const nextDate = nextWateringDate(plant)
   const fmt = (d: Date) => new Intl.DateTimeFormat(i18n.resolvedLanguage).format(d)
-
-  async function handleWatered() {
-    await recordWatering(plantId)
-    onChanged()
-  }
 
   async function handleDelete() {
     if (!window.confirm(t('deleteConfirm'))) return
@@ -212,7 +220,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
               )}
 
               <div className={styles.actions}>
-                <Button onClick={handleWatered}>{t('watered')}</Button>
+                <WateredButton plantId={plantId} onRefresh={onChanged} />
               </div>
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
@@ -244,6 +252,10 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                     ))}
                   </ul>
                 </div>
+              )}
+
+              {achievements && (
+                <AchievementsPanel achievements={achievements} />
               )}
 
               <div className={styles.deleteRow}>

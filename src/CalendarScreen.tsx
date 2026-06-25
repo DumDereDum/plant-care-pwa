@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import WateredButton from './WateredButton'
 import db, { type CareLog, type Plant } from './db'
-import Button from './ui/Button'
+import ScreenState from './ui/ScreenState'
 import { DropIcon, LeafIcon } from './ui/icons'
-import { nextWateringDate, recordWatering } from './watering'
+import { nextWateringDate } from './watering'
 import styles from './CalendarScreen.module.css'
 
 // ---- pure date helpers -----------------------------------------------------
@@ -164,17 +165,25 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
   const [logs, setLogs] = useState<CareLog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     async function load() {
-      const rangeStart = new Date(year, month, 1, 0, 0, 0, 0)
-      const rangeEnd = new Date(year, month + 1, 0, 23, 59, 59, 999)
-      const [allPlants, monthLogs] = await Promise.all([
-        db.plants.toArray(),
-        db.careLogs.where('date').between(rangeStart, rangeEnd, true, true).toArray(),
-      ])
-      setPlants(allPlants)
-      setLogs(monthLogs)
+      try {
+        const rangeStart = new Date(year, month, 1, 0, 0, 0, 0)
+        const rangeEnd = new Date(year, month + 1, 0, 23, 59, 59, 999)
+        const [allPlants, monthLogs] = await Promise.all([
+          db.plants.toArray(),
+          db.careLogs.where('date').between(rangeStart, rangeEnd, true, true).toArray(),
+        ])
+        setPlants(allPlants)
+        setLogs(monthLogs)
+        setLoading(false)
+      } catch {
+        setError(true)
+        setLoading(false)
+      }
     }
     load()
   }, [year, month, refreshKey])
@@ -189,6 +198,9 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
 
   const todayKey = dayKey(today)
 
+  if (loading) return <ScreenState kind="loading" />
+  if (error) return <ScreenState kind="error" onRetry={onRefresh} />
+
   function goPrev() {
     setSelectedKey(null)
     if (month === 0) { setYear((y) => y - 1); setMonth(11) }
@@ -199,11 +211,6 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
     setSelectedKey(null)
     if (month === 11) { setYear((y) => y + 1); setMonth(0) }
     else setMonth((m) => m + 1)
-  }
-
-  async function handleWatered(plantId: number) {
-    await recordWatering(plantId)
-    onRefresh()
   }
 
   const selectedEntry = selectedKey ? dayMap.get(selectedKey) : undefined
@@ -299,9 +306,11 @@ export default function CalendarScreen({ refreshKey, onRefresh }: Props) {
                     <LeafIcon className={styles.plantIcon} />
                     <span className={styles.plantName}>{plant.name}</span>
                     {isSelectedPastOrToday && (
-                      <Button className={styles.wateredBtn} onClick={() => handleWatered(plant.id)}>
-                        {t('watered')}
-                      </Button>
+                      <WateredButton
+                        plantId={plant.id}
+                        onRefresh={onRefresh}
+                        className={styles.wateredBtn}
+                      />
                     )}
                   </li>
                 ))}

@@ -86,3 +86,16 @@ button.main:focus-visible {
   display: flex;
   justify-content: flex-end;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition: box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  /* Lift the card when the tappable body is hovered/focused. */
+  .card:has(button.main:hover),
+  .card:has(button.main:focus-visible) {
+    box-shadow: 0 10px 32px rgba(43, 36, 32, 0.14);
+    transform: translateY(-2px);
+  }
+}

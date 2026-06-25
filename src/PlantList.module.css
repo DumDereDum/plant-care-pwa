@@ -5,7 +5,30 @@
 }
 
 .empty {
-  color: var(--color-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: var(--space-6) 0;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+}
+
+.emptyIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  background: var(--green-100);
+  color: var(--green-600);
+}
+
+.emptyLeaf {
+  width: 36px;
+  height: 36px;
+}
+
+.emptyText {
+  color: var(--color-muted);
+  font-size: var(--text-small);
 }

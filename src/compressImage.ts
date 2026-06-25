@@ -16,11 +16,28 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
 }
 
 /**
+ * Detect MIME type from the first bytes of an image buffer.
+ * Used when creating a Blob for display (we don't store the type separately).
+ */
+export function imageMimeType(buf: ArrayBuffer): string {
+  const b = new Uint8Array(buf, 0, 12)
+  // WebP: RIFF....WEBP
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) {
+    return 'image/webp'
+  }
+  // JPEG: FF D8 FF
+  if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return 'image/jpeg'
+  return 'image/jpeg'
+}
+
+/**
  * Resize to MAX_PX on the longest side and encode as WebP (falling back to
  * JPEG on browsers that do not support WebP canvas output, e.g. older Safari).
- * The original file is never modified or stored.
+ * Returns an ArrayBuffer — NOT a Blob — so it survives IndexedDB round-trips
+ * on iOS Safari and Android WebView without being silently corrupted.
  */
-export async function compressImage(file: File): Promise<Blob> {
+export async function compressImage(file: File): Promise<ArrayBuffer> {
   const img = await loadImage(file)
   const scale = Math.min(1, MAX_PX / Math.max(img.naturalWidth, img.naturalHeight))
   const canvas = document.createElement('canvas')
@@ -29,11 +46,9 @@ export async function compressImage(file: File): Promise<Blob> {
   canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
 
   const webp = await canvasToBlob(canvas, 'image/webp', QUALITY)
-  if (webp?.type === 'image/webp') return webp
+  const blob = (webp?.type === 'image/webp' ? webp : null)
+    ?? await canvasToBlob(canvas, 'image/jpeg', QUALITY)
 
-  // Safari <17 returns a PNG when asked for WebP — fall back to JPEG
-  const jpeg = await canvasToBlob(canvas, 'image/jpeg', QUALITY)
-  if (jpeg) return jpeg
-
-  throw new Error('Image compression failed')
+  if (!blob) throw new Error('Image compression failed')
+  return blob.arrayBuffer()
 }

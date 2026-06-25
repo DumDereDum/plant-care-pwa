@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { computeAchievements } from './achievements'
+import { imageMimeType } from './compressImage'
 import CareGuideFace from './CareGuideFace'
 import CareGuideEditForm from './CareGuideEditForm'
 import { compressImage } from './compressImage'
@@ -66,7 +67,10 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   }, [plant?.careGuideId])
 
   const photo = plant?.photo
-  const photoUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
+  const photoUrl = useMemo(() => {
+    if (!photo || photo.byteLength === 0) return null
+    return URL.createObjectURL(new Blob([photo], { type: imageMimeType(photo) }))
+  }, [photo])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
   const history = useMemo(() => allLogs.slice(0, 5), [allLogs])

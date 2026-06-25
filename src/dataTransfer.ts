@@ -1,3 +1,4 @@
+import { imageMimeType } from './compressImage'
 import db, { type CareGuide, type CareLog, type Plant } from './db'
 
 // Bumped to 3 with the careLogs table (DB v3).
@@ -32,7 +33,10 @@ export interface ExportPayload {
   careLogs?: ExportedCareLog[]
 }
 
-function blobToDataURL(blob: Blob): Promise<string> {
+function bufToDataURL(buf: ArrayBuffer): Promise<string> {
+  // Wrap in a Blob to use FileReader — preserves the correct MIME type
+  // detected from the actual bytes (WebP vs JPEG).
+  const blob = new Blob([buf], { type: imageMimeType(buf) })
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
@@ -41,13 +45,12 @@ function blobToDataURL(blob: Blob): Promise<string> {
   })
 }
 
-function dataURLToBlob(dataURL: string): Blob {
-  const [header, base64] = dataURL.split(',')
-  const mime = header.match(/:(.*?);/)?.[1] ?? 'image/jpeg'
+function dataURLToArrayBuffer(dataURL: string): ArrayBuffer {
+  const [, base64] = dataURL.split(',')
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-  return new Blob([bytes], { type: mime })
+  return bytes.buffer
 }
 
 export async function buildExportPayload(): Promise<ExportPayload> {
@@ -63,7 +66,7 @@ export async function buildExportPayload(): Promise<ExportPayload> {
       name: p.name,
       wateringIntervalDays: p.wateringIntervalDays,
       lastWateredAt: p.lastWateredAt ? p.lastWateredAt.toISOString() : null,
-      photo: p.photo ? await blobToDataURL(p.photo) : undefined,
+      photo: p.photo && p.photo.byteLength > 0 ? await bufToDataURL(p.photo) : undefined,
       careGuideId: p.careGuideId,
     })),
   )
@@ -116,7 +119,7 @@ export async function importData(file: File): Promise<{ count: number }> {
     name: p.name,
     wateringIntervalDays: p.wateringIntervalDays,
     lastWateredAt: p.lastWateredAt ? new Date(p.lastWateredAt) : null,
-    photo: p.photo ? dataURLToBlob(p.photo) : undefined,
+    photo: p.photo ? dataURLToArrayBuffer(p.photo) : undefined,
     careGuideId: p.careGuideId,
   }))
 

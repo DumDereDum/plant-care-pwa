@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { imageMimeType } from './compressImage'
 import { type Plant } from './db'
 import Card from './ui/Card'
 import StatusPill from './ui/StatusPill'
@@ -18,10 +19,10 @@ interface Props {
 export default function PlantCard({ plant, onWatered, onOpen }: Props) {
   const { t, i18n } = useTranslation()
 
-  const photoUrl = useMemo(
-    () => (plant.photo ? URL.createObjectURL(plant.photo) : null),
-    [plant.photo],
-  )
+  const photoUrl = useMemo(() => {
+    if (!plant.photo || plant.photo.byteLength === 0) return null
+    return URL.createObjectURL(new Blob([plant.photo], { type: imageMimeType(plant.photo) }))
+  }, [plant.photo])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
   const days = daysUntilWatering(plant)

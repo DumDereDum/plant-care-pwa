@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { compressImage } from './compressImage'
+import { compressImage, imageMimeType } from './compressImage'
 import db from './db'
 import Button from './ui/Button'
 import Card from './ui/Card'
@@ -16,10 +16,13 @@ export default function AddPlantForm({ onAdded }: Props) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
-  const [photo, setPhoto] = useState<Blob | null>(null)
+  const [photo, setPhoto] = useState<ArrayBuffer | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
+  const previewUrl = useMemo(() => {
+    if (!photo || photo.byteLength === 0) return null
+    return URL.createObjectURL(new Blob([photo], { type: imageMimeType(photo) }))
+  }, [photo])
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {

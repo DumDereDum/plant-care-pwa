@@ -54,3 +54,13 @@
 .secondary:hover:not(:disabled) {
   border-color: var(--color-primary);
 }
+
+.danger {
+  background: var(--color-surface);
+  color: var(--color-danger);
+  border-color: var(--color-border);
+}
+
+.danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+}

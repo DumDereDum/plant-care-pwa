@@ -34,6 +34,8 @@
   "dueSoonDays_other": "in {{count}} days",
   "watered": "Watered",
   "historyHeading": "Watering history",
+  "deletePlant": "Delete plant",
+  "deleteConfirm": "Delete this plant and all its watering history? This cannot be undone.",
   "back": "Back",
   "edit": "Edit",
   "save": "Save",

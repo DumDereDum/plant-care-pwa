@@ -74,6 +74,16 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     onChanged()
   }
 
+  async function handleDelete() {
+    if (!window.confirm(t('deleteConfirm'))) return
+    await db.transaction('rw', db.plants, db.careLogs, async () => {
+      await db.plants.delete(plantId)
+      await db.careLogs.where('plantId').equals(plantId).delete()
+    })
+    onClose()
+    onChanged()
+  }
+
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -220,6 +230,12 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   </ul>
                 </div>
               )}
+
+              <div className={styles.deleteRow}>
+                <Button variant="danger" onClick={handleDelete}>
+                  {t('deletePlant')}
+                </Button>
+              </div>
             </>
           )}
         </Card>

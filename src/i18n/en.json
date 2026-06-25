@@ -26,5 +26,17 @@
   "changePhoto": "Change photo",
   "submitAdd": "Add plant",
   "updateAvailable": "A new version is available.",
-  "updateNow": "Update"
+  "updateNow": "Update",
+  "dataTransferHeading": "Backup & Restore",
+  "exportData": "Export data",
+  "importData": "Import data",
+  "importConfirm": "This will overwrite existing plants with data from the file. Continue?",
+  "exportSuccess": "Data exported successfully.",
+  "exportError": "Export failed. Please try again.",
+  "importSuccess_one": "{{count}} plant imported.",
+  "importSuccess_other": "{{count}} plants imported.",
+  "importError": "Import failed. Please try again.",
+  "invalidJson": "Invalid file: not valid JSON.",
+  "invalidFormat": "Invalid file: missing required fields.",
+  "unsupportedVersion": "This backup was created by a newer version of the app and cannot be imported."
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AddPlantForm from './AddPlantForm'
+import DataTransferPanel from './DataTransferPanel'
 import LanguageSwitcher from './LanguageSwitcher'
 import PlantList from './PlantList'
 import TodayScreen from './TodayScreen'
@@ -36,6 +37,7 @@ export default function App() {
           <PlantList refreshKey={refreshKey} onRefresh={refresh} />
           <h2>{t('addPlantHeading')}</h2>
           <AddPlantForm onAdded={refresh} />
+          <DataTransferPanel onImported={refresh} />
         </>
       )}
     </main>

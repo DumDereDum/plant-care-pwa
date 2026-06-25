@@ -1,0 +1,27 @@
+.bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.filled,
+.empty {
+  display: inline-flex;
+}
+
+.empty {
+  color: var(--color-border);
+}
+
+.bar[data-icon='sun'] .filled {
+  color: var(--amber-500);
+}
+
+.bar[data-icon='drop'] .filled {
+  color: var(--green-500);
+}

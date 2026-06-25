@@ -1,5 +1,6 @@
 {
   "appTitle": "Plant Care",
+  "ratingValue": "{{label}}: {{value}} of {{max}}",
   "tabToday": "Today",
   "tabPlants": "My Plants",
   "plantsHeading": "My Plants",

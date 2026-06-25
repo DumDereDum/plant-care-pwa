@@ -1,5 +1,6 @@
 {
   "appTitle": "Уход за растениями",
+  "ratingValue": "{{label}}: {{value}} из {{max}}",
   "tabToday": "Сегодня",
   "tabPlants": "Мои растения",
   "plantsHeading": "Мои растения",

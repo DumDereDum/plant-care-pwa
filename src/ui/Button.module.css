@@ -1,0 +1,56 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--text-body);
+  line-height: 1;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Press feedback — only animate when motion is allowed. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn {
+    transition:
+      transform 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-strong);
+}
+
+.secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-border);
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}

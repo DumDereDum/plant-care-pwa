@@ -2,6 +2,9 @@ import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { compressImage } from './compressImage'
 import db, { type Plant } from './db'
+import Button from './ui/Button'
+import Card from './ui/Card'
+import StatusPill from './ui/StatusPill'
 import { daysUntilWatering, nextWateringDate } from './watering'
 
 interface Props {
@@ -48,16 +51,18 @@ export default function PlantCard({ plant, onWatered }: Props) {
           ? t('dueToday')
           : t('dueSoonDays', { count: days })
 
+  const statusTone = !plant.lastWateredAt || days <= 0 ? 'coral' : 'amber'
+
   return (
-    <div>
+    <Card>
       {photoUrl && (
         <img src={photoUrl} alt={plant.name} width={80} height={80} style={{ objectFit: 'cover' }} />
       )}
       <strong>{plant.name}</strong>
       <div>{t('waterEvery', { count: plant.wateringIntervalDays })}</div>
       {nextDate && <div>{t('nextWatering', { date: fmt(nextDate) })}</div>}
-      <div>{statusText}</div>
-      <button onClick={handleWatered}>{t('watered')}</button>
+      <div><StatusPill tone={statusTone}>{statusText}</StatusPill></div>
+      <Button onClick={handleWatered}>{t('watered')}</Button>
       <label>
         {t(plant.photo ? 'changePhoto' : 'addPhoto')}
         <input
@@ -67,6 +72,6 @@ export default function PlantCard({ plant, onWatered }: Props) {
           onChange={handlePhotoChange}
         />
       </label>
-    </div>
+    </Card>
   )
 }

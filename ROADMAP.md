@@ -110,7 +110,10 @@ interface CareLog {
   Verify: app renders with new fonts/colors; build + lint clean; offline still works after
   rebuild (fonts load with no network).
 
-- [ ] **T9.2 — Reusable UI primitives**
+- [x] **T9.2 — Reusable UI primitives** — done 2026-06-25: `src/ui/` with Card, Button
+  (primary/secondary, 48px, press feedback), StatusPill (green/coral/amber), StatBar (1–5
+  suns/drops, a11y label via i18n `ratingValue`), CSS Modules. Card+StatusPill+Button wired
+  live into PlantCard; StatBar built & lint-clean, wired for real in T11.3 (needs careGuide data).
   Task: Add small reusable components per `DESIGN.md`: `Card`, `Button` (primary/secondary,
   ≥44px tap target, press feedback), `StatusPill` (coral/green/amber, color + text), and a
   `StatBar` for 1–5 icon ratings (suns/drops). All text via i18n. No screen rewrites yet —

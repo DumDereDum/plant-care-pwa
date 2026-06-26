@@ -194,7 +194,6 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  autoFocus
                 />
               </label>
               <div className={styles.field}>

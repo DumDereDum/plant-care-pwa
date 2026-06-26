@@ -86,7 +86,6 @@ export default function AddPlantForm({ onAdded }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            autoFocus
           />
         </label>
 

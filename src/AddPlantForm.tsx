@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CATALOG_SORTED, catalogEntryToGuideData, type CatalogEntry } from './catalog'
 import { compressImage, imageMimeType } from './compressImage'
-import db from './db'
+import db, { type CareGuide } from './db'
 import Button from './ui/Button'
 import Card from './ui/Card'
 import { LeafIcon } from './ui/icons'
@@ -18,6 +19,7 @@ export default function AddPlantForm({ onAdded }: Props) {
   const [intervalDays, setIntervalDays] = useState(7)
   const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
   const [fertilizeIntervalDays, setFertilizeIntervalDays] = useState(14)
+  const [catalogEntry, setCatalogEntry] = useState<CatalogEntry | null>(null)
   const [photo, setPhoto] = useState<ArrayBuffer | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -26,6 +28,21 @@ export default function AddPlantForm({ onAdded }: Props) {
     return URL.createObjectURL(new Blob([photo], { type: imageMimeType(photo) }))
   }, [photo])
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
+
+  function handleCatalogSelect(id: string) {
+    const entry = CATALOG_SORTED.find((e) => e.id === id) ?? null
+    setCatalogEntry(entry)
+    if (!entry) return
+    // Pre-fill name only when the field is still empty
+    if (!name.trim()) setName(entry.commonName)
+    if (entry.recommendedWateringIntervalDays) {
+      setIntervalDays(entry.recommendedWateringIntervalDays)
+    }
+    if (entry.fertilizeIntervalDays) {
+      setFertilizeEnabled(true)
+      setFertilizeIntervalDays(entry.fertilizeIntervalDays)
+    }
+  }
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -41,17 +58,27 @@ export default function AddPlantForm({ onAdded }: Props) {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
-    await db.plants.add({
+
+    const plantId = (await db.plants.add({
       name: name.trim(),
       wateringIntervalDays: Math.max(1, Math.round(intervalDays)),
       lastWateredAt: null,
       fertilizeIntervalDays: fertilizeEnabled ? Math.max(7, Math.round(fertilizeIntervalDays)) : undefined,
       photo: photo ?? undefined,
-    })
+    })) as number
+
+    if (catalogEntry) {
+      const guideId = (await db.careGuides.add(
+        catalogEntryToGuideData(catalogEntry) as CareGuide,
+      )) as number
+      await db.plants.update(plantId, { careGuideId: guideId })
+    }
+
     setName('')
     setIntervalDays(7)
     setFertilizeEnabled(false)
     setFertilizeIntervalDays(14)
+    setCatalogEntry(null)
     setPhoto(null)
     onAdded()
   }
@@ -79,6 +106,26 @@ export default function AddPlantForm({ onAdded }: Props) {
       />
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        {/* Species picker — prefills fields and seeds a care guide */}
+        <div className={styles.field}>
+          <span className={styles.fieldLabel}>{t('labelSpeciesSearch')}</span>
+          <select
+            className={styles.select}
+            value={catalogEntry?.id ?? ''}
+            onChange={(e) => handleCatalogSelect(e.target.value)}
+          >
+            <option value="">{t('speciesPickerPlaceholder')}</option>
+            {CATALOG_SORTED.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.commonName} — {entry.latinName}
+              </option>
+            ))}
+          </select>
+          {catalogEntry && (
+            <span className={styles.hint}>{t('speciesPickerHint')}</span>
+          )}
+        </div>
+
         <label className={styles.field}>
           <span className={styles.fieldLabel}>{t('labelName')}</span>
           <input

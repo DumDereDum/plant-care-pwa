@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { computeAchievements } from './achievements'
+import { CATALOG_SORTED, catalogEntryToGuideData, type CatalogEntry } from './catalog'
 import { imageMimeType } from './compressImage'
 import CareGuideFace from './CareGuideFace'
 import CareGuideEditForm from './CareGuideEditForm'
@@ -40,6 +41,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   const [intervalDays, setIntervalDays] = useState(7)
   const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
   const [fertilizeIntervalDays, setFertilizeIntervalDays] = useState(14)
+  const [editCatalogEntry, setEditCatalogEntry] = useState<CatalogEntry | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -121,18 +123,44 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     setIntervalDays(plant.wateringIntervalDays)
     setFertilizeEnabled(!!plant.fertilizeIntervalDays)
     setFertilizeIntervalDays(plant.fertilizeIntervalDays ?? 14)
+    setEditCatalogEntry(null)
     setEditing(true)
+  }
+
+  function handleEditCatalogSelect(id: string) {
+    const entry = CATALOG_SORTED.find((e) => e.id === id) ?? null
+    setEditCatalogEntry(entry)
+    if (!entry) return
+    if (entry.recommendedWateringIntervalDays) {
+      setIntervalDays(entry.recommendedWateringIntervalDays)
+    }
+    if (entry.fertilizeIntervalDays) {
+      setFertilizeEnabled(true)
+      setFertilizeIntervalDays(entry.fertilizeIntervalDays)
+    }
   }
 
   async function handleSave(e: FormEvent) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) return
+
     await db.plants.update(plantId, {
       name: trimmed,
       wateringIntervalDays: Math.max(1, Math.round(intervalDays)),
       fertilizeIntervalDays: fertilizeEnabled ? Math.max(7, Math.round(fertilizeIntervalDays)) : undefined,
     })
+
+    if (editCatalogEntry) {
+      const guideData = catalogEntryToGuideData(editCatalogEntry)
+      if (guide) {
+        await db.careGuides.update(guide.id, guideData)
+      } else {
+        const guideId = (await db.careGuides.add(guideData as CareGuide)) as number
+        await db.plants.update(plantId, { careGuideId: guideId })
+      }
+    }
+
     setEditing(false)
     onChanged()
   }
@@ -187,6 +215,25 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   {t(plant.photo ? 'changePhoto' : 'addPhoto')}
                 </Button>
               </div>
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>{t('catalogPickerLabel')}</span>
+                <select
+                  className={styles.select}
+                  value={editCatalogEntry?.id ?? ''}
+                  onChange={(e) => handleEditCatalogSelect(e.target.value)}
+                >
+                  <option value="">{t('speciesPickerPlaceholder')}</option>
+                  {CATALOG_SORTED.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {entry.commonName} — {entry.latinName}
+                    </option>
+                  ))}
+                </select>
+                {editCatalogEntry && (
+                  <span className={styles.hint}>{t('catalogPickerEditHint')}</span>
+                )}
+              </div>
+
               <label className={styles.field}>
                 <span className={styles.fieldLabel}>{t('labelName')}</span>
                 <input

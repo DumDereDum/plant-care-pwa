@@ -110,6 +110,28 @@
   outline-offset: 1px;
 }
 
+.select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.hint {
+  font-size: var(--text-tiny);
+  color: var(--color-muted);
+  padding-top: var(--space-1);
+}
+
 /* ── Interval slider ── */
 
 .sliderHeader {

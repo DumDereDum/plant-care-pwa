@@ -18,7 +18,10 @@ working practices that don't fit in CLAUDE.md.
     achievements/care points, locale cleanup.
   - **Bug fixes:** photo loss on iOS/Android (Blob → ArrayBuffer in IndexedDB), Watered
     button losing state on reload (persist via `lastWateredAt`).
-- **DB is at version 4.** See `docs/HANDOFF.md` for the full migration chain.
+  - **Phase 14:** fertilize/repot care events, fertilize interval reminders (DB v5),
+    keyboard auto-open bug fix (removed `autoFocus`), bundled care guide catalog
+    (12 species, `src/catalog.ts`).
+- **DB is at version 5.** See `docs/HANDOFF.md` for the full migration chain.
 - **See `docs/HANDOFF.md`** for the current task state, non-obvious technical facts, and
   next steps.
 

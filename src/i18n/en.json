@@ -89,6 +89,11 @@
   "installAndroidStep3": "Tap \"Install\" to confirm.",
   "installGuideNote": "After installing, the app works fully offline. Your data is stored only on this device.",
 
+  "labelSpeciesSearch": "Species (optional)",
+  "speciesPickerPlaceholder": "— pick from catalog —",
+  "speciesPickerHint": "Care guide prefilled from catalog. You can edit it any time.",
+  "catalogPickerLabel": "Fill guide from catalog",
+  "catalogPickerEditHint": "Care guide will be updated on save. You can edit it any time.",
   "editCareGuide": "Edit guide",
   "createCareGuide": "Create guide",
   "careGuideSave": "Save",

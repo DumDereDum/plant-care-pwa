@@ -164,5 +164,6 @@
   "catalogInfoLabel": "Plant info",
   "catalogSelectPlant": "Select this plant",
   "catalogNoResults": "No plants found",
-  "addManually": "Add manually (not in catalog)"
+  "addManually": "Add manually (not in catalog)",
+  "catalogWikiLink": "Open on Wikipedia →"
 }

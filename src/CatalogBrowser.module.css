@@ -7,7 +7,6 @@
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  /* On wide viewports, keep the browser aligned with the app column */
   max-width: var(--app-max-width);
   left: 50%;
   transform: translateX(-50%);
@@ -52,7 +51,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .closeBtn:hover {
@@ -100,66 +99,67 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
-  align-items: start;
 }
 
-/* ── Card shell ──────────────────────────────────────────────── */
+/* ── Card ────────────────────────────────────────────────────── */
 
 .card {
   border-radius: var(--radius-md);
-  background: var(--color-surface);
   box-shadow: var(--shadow-card);
-  overflow: hidden;
-  position: relative;
-}
-
-/* ── Front face ──────────────────────────────────────────────── */
-
-.front {
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
-  cursor: pointer;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.12s, box-shadow 0.12s;
+  overflow: hidden;
   position: relative;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
 }
 
-.front:hover {
-  transform: translateY(-2px);
+.card:hover {
   box-shadow: 0 8px 24px rgba(43, 36, 32, 0.12);
 }
 
-.front:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
+/* ── Photo area ──────────────────────────────────────────────── */
 
-.front:active {
-  transform: scale(0.97);
-}
-
-/* Leaf thumbnail */
-.thumb {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+.photoWrap {
+  position: relative;
+  height: 160px;
+  background: var(--green-100);
   display: grid;
   place-items: center;
-  flex-shrink: 0;
+  overflow: hidden;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.thumbIcon {
-  width: 52px;
-  height: 52px;
-  opacity: 0.75;
+.photoWrap:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
-/* Card body: name + perk dots */
+.photoFallback {
+  width: 48px;
+  height: 48px;
+  color: var(--green-600);
+  opacity: 0.45;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s;
+}
+
+/* ── Card body ───────────────────────────────────────────────── */
+
 .cardBody {
   padding: var(--space-2) var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 4px;
 }
 
 .cardName {
@@ -167,24 +167,42 @@
   font-size: var(--text-small);
   font-weight: 700;
   color: var(--color-text);
-  line-height: 1.25;
-  /* Allow up to 2 lines, then ellipsis */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.2;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statsRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.statChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-tiny);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.statChipIcon {
+  width: 12px;
+  height: 12px;
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .perkRow {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin-top: 2px;
 }
 
 .perkDot {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -192,11 +210,12 @@
 }
 
 .perkDotIcon {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
 }
 
-/* ℹ info button — top-right corner of the card */
+/* ── ℹ button (card) ─────────────────────────────────────────── */
+
 .infoBtn {
   position: absolute;
   top: var(--space-2);
@@ -205,8 +224,8 @@
   height: 28px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
   color: var(--color-muted);
   font-size: 14px;
   line-height: 1;
@@ -214,117 +233,12 @@
   display: grid;
   place-items: center;
   transition: background 0.12s, color 0.12s;
+  z-index: 1;
 }
 
 .infoBtn:hover {
   background: var(--green-100);
   color: var(--green-700);
-}
-
-/* ── Back face ───────────────────────────────────────────────── */
-
-.back {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  min-height: 220px;
-}
-
-.backHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.backCloseBtn {
-  border: none;
-  background: none;
-  color: var(--color-muted);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 var(--space-1);
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.12s;
-}
-
-.backCloseBtn:hover {
-  color: var(--color-text);
-}
-
-.backLatin {
-  font-style: italic;
-  font-size: var(--text-tiny);
-  color: var(--color-muted);
-  line-height: 1.3;
-}
-
-.backDesc {
-  font-size: var(--text-tiny);
-  color: var(--color-text);
-  line-height: 1.45;
-  margin: 0;
-  flex: 1;
-}
-
-.backPerks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-
-.perkBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: var(--radius-pill);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.perkBadgeIcon {
-  width: 10px;
-  height: 10px;
-  flex-shrink: 0;
-}
-
-.selectBtn {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font: inherit;
-  font-size: var(--text-small);
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.12s;
-  margin-top: auto;
-}
-
-.selectBtn:hover {
-  background: var(--color-primary-strong);
-}
-
-/* ── Perk tone colours ───────────────────────────────────────── */
-
-.tone_good {
-  background: var(--green-50);
-  color: var(--green-700);
-}
-
-.tone_bad {
-  background: var(--coral-50);
-  color: var(--coral-600);
-}
-
-.tone_neutral {
-  background: var(--amber-50);
-  color: var(--amber-600);
 }
 
 /* ── Empty / manual ─────────────────────────────────────────── */
@@ -358,4 +272,353 @@
 
 .manualBtn:hover {
   color: var(--color-text);
+}
+
+/* ── Perk tone colours (shared) ──────────────────────────────── */
+
+.tone_good    { background: var(--green-50);  color: var(--green-700);  }
+.tone_bad     { background: var(--coral-50);  color: var(--coral-600);  }
+.tone_neutral { background: var(--amber-50);  color: var(--amber-600);  }
+
+/* ════════════════════════════════════════════════════════════════
+   Detail panel — full-screen overlay within the catalog overlay
+   ════════════════════════════════════════════════════════════════ */
+
+.detail {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  /* Slide in from the right */
+  animation: slideInRight 0.22s ease;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail {
+    animation: none;
+  }
+}
+
+/* ── Detail header ───────────────────────────────────────────── */
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detailBack {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  color: var(--color-muted);
+  font-size: 18px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.detailBack:hover {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.detailHeaderName {
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+  flex: 1;
+  padding: 0 var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Detail scrollable area ──────────────────────────────────── */
+
+.detailScroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Hero photo ──────────────────────────────────────────────── */
+
+.detailHero {
+  position: relative;
+  height: 240px;
+  background: var(--green-100);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.detailHeroFallback {
+  width: 72px;
+  height: 72px;
+  color: var(--green-600);
+  opacity: 0.4;
+}
+
+.detailHeroImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s;
+}
+
+/* ── Detail content ──────────────────────────────────────────── */
+
+.detailContent {
+  padding: var(--space-4) var(--space-4) calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.detailNameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailName {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.detailLatin {
+  font-style: italic;
+  font-size: var(--text-small);
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.detailDesc {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Section ─────────────────────────────────────────────────── */
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detailSectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-small);
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ── Stats 2×2 grid ──────────────────────────────────────────── */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.statBlock {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  box-shadow: var(--shadow-card);
+}
+
+.statBlockIcon {
+  width: 28px;
+  height: 28px;
+  background: var(--green-100);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+}
+
+.statBlockIconSvg {
+  width: 16px;
+  height: 16px;
+  color: var(--green-700);
+}
+
+.statBlockLabel {
+  font-size: var(--text-tiny);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.statBlockDots {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotFilled {
+  background: var(--color-primary);
+}
+
+.dotEmpty {
+  background: var(--color-border);
+}
+
+/* ── Temperature row ─────────────────────────────────────────── */
+
+.tempRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-card);
+}
+
+.tempIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.tempValue {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Perk list ───────────────────────────────────────────────── */
+
+.perkList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.perkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.perkItemIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Care tips ───────────────────────────────────────────────── */
+
+.detailTips {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-card);
+  border-left: 3px solid var(--color-primary);
+}
+
+/* ── Schedule ────────────────────────────────────────────────── */
+
+.detailSchedule {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: 1.5;
+  margin: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Wikipedia link ──────────────────────────────────────────── */
+
+.detailWikiLink {
+  align-self: flex-start;
+  font-size: var(--text-small);
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  transition: opacity 0.12s;
+}
+
+.detailWikiLink:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+/* ── Sticky footer with Select button ────────────────────────── */
+
+.detailFooter {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.detailSelectBtn {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.detailSelectBtn:hover {
+  background: var(--color-primary-strong);
 }

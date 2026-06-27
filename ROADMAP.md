@@ -102,7 +102,7 @@ Try on a 375 px-wide viewport (Chrome DevTools). EN/RU switch works in the brows
 
 ---
 
-### T15.3 — Card flip: back face with description + Wikipedia link
+### T15.3 — Card flip: back face with description + Wikipedia link — done 2026-06-27
 
 Add a flip animation to catalog cards so the ℹ︎ button reveals the back face.
 

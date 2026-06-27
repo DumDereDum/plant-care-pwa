@@ -83,6 +83,15 @@ export function HelpIcon({ className }: IconProps) {
   )
 }
 
+export function HumidityIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2C6 10 4 14 4 17a8 8 0 0 0 16 0c0-3-2-7-8-15z" />
+      <path d="M12 22v-4M8 18l2-2M16 18l-2-2" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
 export function WaveIcon({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

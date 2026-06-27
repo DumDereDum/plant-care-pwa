@@ -2,16 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CATALOG_SORTED, type CatalogEntry } from './catalog'
 import { PERK_CONFIG } from './perkConfig'
-import { LeafIcon } from './ui/icons'
+import { DropIcon, HumidityIcon, LeafIcon, StarIcon, SunIcon, ThermometerIcon } from './ui/icons'
 import styles from './CatalogBrowser.module.css'
-
-/** Background + icon color for the leaf thumbnail, keyed to the plant's water need. */
-function thumbColors(entry: CatalogEntry): { background: string; color: string } {
-  const w = entry.water ?? 2
-  if (w <= 1) return { background: 'var(--amber-50)',  color: 'var(--amber-600)' }
-  if (w <= 2) return { background: 'var(--green-100)', color: 'var(--green-700)' }
-  return          { background: 'var(--green-50)',  color: 'var(--green-600)' }
-}
 
 interface Props {
   onSelect: (entry: CatalogEntry) => void
@@ -19,31 +11,234 @@ interface Props {
   onClose: () => void
 }
 
-export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Props) {
+// ── Plant detail panel ─────────────────────────────────────────────────────────
+
+interface DetailProps {
+  entry: CatalogEntry
+  onClose: () => void
+  onSelect: (entry: CatalogEntry) => void
+}
+
+function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
   const { t, i18n } = useTranslation()
+  const isRu = i18n.language.startsWith('ru')
+  const description = isRu ? entry.description_ru : entry.description_en
+  const perks = entry.perks ?? []
+
+  // Trap focus / close on Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  function StatBlock({
+    icon,
+    label,
+    value,
+  }: {
+    icon: React.ReactNode
+    label: string
+    value: number
+  }) {
+    return (
+      <div className={styles.statBlock}>
+        <div className={styles.statBlockIcon}>{icon}</div>
+        <span className={styles.statBlockLabel}>{label}</span>
+        <div className={styles.statBlockDots}>
+          {Array.from({ length: 5 }, (_, i) => (
+            <span
+              key={i}
+              className={`${styles.dot} ${i < value ? styles.dotFilled : styles.dotEmpty}`}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.detail} role="dialog" aria-modal="true" aria-label={entry.commonName}>
+      {/* Sticky header */}
+      <div className={styles.detailHeader}>
+        <button className={styles.detailBack} onClick={onClose} aria-label={t('back')}>
+          ←
+        </button>
+        <span className={styles.detailHeaderName}>{entry.commonName}</span>
+        <div style={{ width: 40 }} />
+      </div>
+
+      {/* Scrollable content */}
+      <div className={styles.detailScroll}>
+        {/* Hero photo */}
+        <div className={styles.detailHero}>
+          <LeafIcon className={styles.detailHeroFallback} />
+          <img
+            src={entry.photoUrl}
+            alt={entry.commonName}
+            className={styles.detailHeroImg}
+            onError={(e) => { e.currentTarget.style.opacity = '0' }}
+          />
+        </div>
+
+        <div className={styles.detailContent}>
+          {/* Name block */}
+          <div className={styles.detailNameBlock}>
+            <h2 className={styles.detailName}>{entry.commonName}</h2>
+            <p className={styles.detailLatin}>{entry.latinName}</p>
+          </div>
+
+          {/* Description */}
+          <p className={styles.detailDesc}>{description}</p>
+
+          {/* Stats grid */}
+          {(entry.light != null || entry.water != null || entry.humidity != null || entry.difficulty != null) && (
+            <section className={styles.detailSection}>
+              <h3 className={styles.detailSectionTitle}>{t('sectionStats')}</h3>
+              <div className={styles.statsGrid}>
+                {entry.light != null && (
+                  <StatBlock
+                    icon={<SunIcon className={styles.statBlockIconSvg} />}
+                    label={t('careLight')}
+                    value={entry.light}
+                  />
+                )}
+                {entry.water != null && (
+                  <StatBlock
+                    icon={<DropIcon className={styles.statBlockIconSvg} />}
+                    label={t('careWater')}
+                    value={entry.water}
+                  />
+                )}
+                {entry.humidity != null && (
+                  <StatBlock
+                    icon={<HumidityIcon className={styles.statBlockIconSvg} />}
+                    label={t('careHumidity')}
+                    value={entry.humidity}
+                  />
+                )}
+                {entry.difficulty != null && (
+                  <StatBlock
+                    icon={<StarIcon className={styles.statBlockIconSvg} />}
+                    label={t('careDifficulty')}
+                    value={entry.difficulty}
+                  />
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Temperature */}
+          {(entry.tempMin != null || entry.tempMax != null) && (
+            <section className={styles.detailSection}>
+              <h3 className={styles.detailSectionTitle}>{t('sectionTemperature')}</h3>
+              <div className={styles.tempRow}>
+                <ThermometerIcon className={styles.tempIcon} />
+                <span className={styles.tempValue}>
+                  {entry.tempMin != null && entry.tempMax != null
+                    ? t('careTempValue', { min: entry.tempMin, max: entry.tempMax })
+                    : entry.tempMin != null
+                    ? t('careTempMin', { min: entry.tempMin })
+                    : t('careTempMax', { max: entry.tempMax })}
+                </span>
+              </div>
+            </section>
+          )}
+
+          {/* Perks */}
+          {perks.length > 0 && (
+            <section className={styles.detailSection}>
+              <h3 className={styles.detailSectionTitle}>{t('sectionPerks')}</h3>
+              <div className={styles.perkList}>
+                {perks.map((key) => {
+                  const meta = PERK_CONFIG[key]
+                  if (!meta) return null
+                  return (
+                    <span
+                      key={key}
+                      className={`${styles.perkItem} ${styles[`tone_${meta.tone}`]}`}
+                    >
+                      <meta.Icon className={styles.perkItemIcon} />
+                      <span>{t(meta.labelKey)}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Care tips */}
+          {entry.careTips && (
+            <section className={styles.detailSection}>
+              <h3 className={styles.detailSectionTitle}>{t('careTips')}</h3>
+              <p className={styles.detailTips}>{entry.careTips}</p>
+            </section>
+          )}
+
+          {/* Schedule hint */}
+          {entry.recommendedWateringIntervalDays != null && (
+            <section className={styles.detailSection}>
+              <h3 className={styles.detailSectionTitle}>{t('sectionSchedule')}</h3>
+              <p className={styles.detailSchedule}>
+                💧 {i18n.t('waterEvery', { count: entry.recommendedWateringIntervalDays })}
+                {entry.fertilizeIntervalDays != null && (
+                  <>
+                    {' · '}
+                    🌿 {i18n.t('fertilizeEvery', { count: entry.fertilizeIntervalDays })}
+                  </>
+                )}
+              </p>
+            </section>
+          )}
+
+          {/* Wikipedia link */}
+          <a
+            href={entry.wikiUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.detailWikiLink}
+          >
+            {t('catalogWikiLink')}
+          </a>
+        </div>
+      </div>
+
+      {/* Sticky footer */}
+      <div className={styles.detailFooter}>
+        <button className={styles.detailSelectBtn} onClick={() => onSelect(entry)}>
+          {t('catalogSelectPlant')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Catalog browser ────────────────────────────────────────────────────────────
+
+export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Props) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
-  const [flippedId, setFlippedId] = useState<string | null>(null)
+  const [detailEntry, setDetailEntry] = useState<CatalogEntry | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  // Lock body scroll while the browser is open
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
   }, [])
 
-  // Escape: close back face first, then the whole browser
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key !== 'Escape') return
-      if (flippedId) setFlippedId(null)
+      if (detailEntry) setDetailEntry(null)
       else onClose()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [flippedId, onClose])
+  }, [detailEntry, onClose])
 
-  // Auto-focus the search bar on open
   useEffect(() => { searchRef.current?.focus() }, [])
 
   const q = search.trim().toLowerCase()
@@ -55,12 +250,6 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
       )
     : CATALOG_SORTED
 
-  function pick(entry: CatalogEntry) {
-    onSelect(entry)
-  }
-
-  const isRu = i18n.language.startsWith('ru')
-
   return (
     <div
       className={styles.overlay}
@@ -68,19 +257,14 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
       aria-modal="true"
       aria-label={t('catalogBrowserTitle')}
     >
-      {/* ── Header ── */}
+      {/* ── Grid view ── */}
       <div className={styles.header}>
         <h2 className={styles.title}>{t('catalogBrowserTitle')}</h2>
-        <button
-          className={styles.closeBtn}
-          onClick={onClose}
-          aria-label={t('catalogClose')}
-        >
+        <button className={styles.closeBtn} onClick={onClose} aria-label={t('catalogClose')}>
           ✕
         </button>
       </div>
 
-      {/* ── Search ── */}
       <div className={styles.searchWrap}>
         <input
           ref={searchRef}
@@ -88,11 +272,10 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
           type="search"
           placeholder={t('catalogSearchPlaceholder')}
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setFlippedId(null) }}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      {/* ── Scrollable grid ── */}
       <div className={styles.scrollArea}>
         {filtered.length === 0 && (
           <p className={styles.noResults}>{t('catalogNoResults')}</p>
@@ -100,122 +283,104 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
 
         <div className={styles.grid}>
           {filtered.map((entry) => {
-            const isFlipped = flippedId === entry.id
-            const thumb = thumbColors(entry)
             const perks = entry.perks ?? []
             const frontPerks = perks.slice(0, 4)
-            const description = isRu ? entry.description_ru : entry.description_en
 
             return (
               <div key={entry.id} className={styles.card}>
-                {/* ── Front face ── */}
-                {!isFlipped && (
-                  <div
-                    className={styles.front}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={entry.commonName}
-                    onClick={() => pick(entry)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        pick(entry)
-                      }
-                    }}
-                  >
-                    {/* Leaf illustration */}
-                    <div className={styles.thumb} style={thumb}>
-                      <LeafIcon className={styles.thumbIcon} />
-                    </div>
+                {/* Photo */}
+                <div
+                  className={styles.photoWrap}
+                  onClick={() => onSelect(entry)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={entry.commonName}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(entry) }
+                  }}
+                >
+                  <LeafIcon className={styles.photoFallback} />
+                  <img
+                    src={entry.photoUrl}
+                    alt={entry.commonName}
+                    className={styles.photo}
+                    onError={(e) => { e.currentTarget.style.opacity = '0' }}
+                  />
+                </div>
 
-                    {/* Name + perks */}
-                    <div className={styles.cardBody}>
-                      <span className={styles.cardName}>{entry.commonName}</span>
-                      {frontPerks.length > 0 && (
-                        <div className={styles.perkRow} onClick={(e) => e.stopPropagation()}>
-                          {frontPerks.map((key) => {
-                            const meta = PERK_CONFIG[key]
-                            if (!meta) return null
-                            return (
-                              <span
-                                key={key}
-                                className={`${styles.perkDot} ${styles[`tone_${meta.tone}`]}`}
-                                title={t(meta.labelKey)}
-                                aria-label={t(meta.labelKey)}
-                              >
-                                <meta.Icon className={styles.perkDotIcon} />
-                              </span>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                {/* Card body */}
+                <div className={styles.cardBody} onClick={() => onSelect(entry)}>
+                  <span className={styles.cardName}>{entry.commonName}</span>
 
-                    {/* Info button — stops propagation so it doesn't select */}
-                    <button
-                      className={styles.infoBtn}
-                      aria-label={t('catalogInfoLabel')}
-                      onClick={(e) => { e.stopPropagation(); setFlippedId(entry.id) }}
-                    >
-                      ℹ
-                    </button>
-                  </div>
-                )}
-
-                {/* ── Back face ── */}
-                {isFlipped && (
-                  <div className={styles.back}>
-                    <div className={styles.backHeader}>
-                      <button
-                        className={styles.backCloseBtn}
-                        aria-label={t('back')}
-                        onClick={() => setFlippedId(null)}
-                      >
-                        ←
-                      </button>
-                      <span className={styles.backLatin}>{entry.latinName}</span>
-                    </div>
-
-                    <p className={styles.backDesc}>{description}</p>
-
-                    {perks.length > 0 && (
-                      <div className={styles.backPerks}>
-                        {perks.map((key) => {
-                          const meta = PERK_CONFIG[key]
-                          if (!meta) return null
-                          return (
-                            <span
-                              key={key}
-                              className={`${styles.perkBadge} ${styles[`tone_${meta.tone}`]}`}
-                            >
-                              <meta.Icon className={styles.perkBadgeIcon} />
-                              <span>{t(meta.labelKey)}</span>
-                            </span>
-                          )
-                        })}
-                      </div>
+                  <div className={styles.statsRow}>
+                    {entry.light != null && (
+                      <span className={styles.statChip}>
+                        <SunIcon className={styles.statChipIcon} />
+                        <span>{entry.light}</span>
+                      </span>
                     )}
-
-                    <button
-                      className={styles.selectBtn}
-                      onClick={() => pick(entry)}
-                    >
-                      {t('catalogSelectPlant')}
-                    </button>
+                    {entry.water != null && (
+                      <span className={styles.statChip}>
+                        <DropIcon className={styles.statChipIcon} />
+                        <span>{entry.water}</span>
+                      </span>
+                    )}
+                    {entry.difficulty != null && (
+                      <span className={styles.statChip}>
+                        <StarIcon className={styles.statChipIcon} />
+                        <span>{entry.difficulty}</span>
+                      </span>
+                    )}
                   </div>
-                )}
+
+                  {frontPerks.length > 0 && (
+                    <div className={styles.perkRow}>
+                      {frontPerks.map((key) => {
+                        const meta = PERK_CONFIG[key]
+                        if (!meta) return null
+                        return (
+                          <span
+                            key={key}
+                            className={`${styles.perkDot} ${styles[`tone_${meta.tone}`]}`}
+                            title={t(meta.labelKey)}
+                            aria-label={t(meta.labelKey)}
+                          >
+                            <meta.Icon className={styles.perkDotIcon} />
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* ℹ︎ opens detail panel */}
+                <button
+                  className={styles.infoBtn}
+                  aria-label={t('catalogInfoLabel')}
+                  onClick={(e) => { e.stopPropagation(); setDetailEntry(entry) }}
+                >
+                  ℹ
+                </button>
               </div>
             )
           })}
         </div>
 
-        {/* ── Add manually ── */}
         <div className={styles.manualRow}>
           <button className={styles.manualBtn} onClick={onAddManually}>
             {t('addManually')}
           </button>
         </div>
       </div>
+
+      {/* ── Detail overlay ── */}
+      {detailEntry && (
+        <PlantDetail
+          entry={detailEntry}
+          onClose={() => setDetailEntry(null)}
+          onSelect={(e) => { onSelect(e) }}
+        />
+      )}
     </div>
   )
 }

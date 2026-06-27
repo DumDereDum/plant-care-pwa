@@ -176,5 +176,6 @@
   "catalogInfoLabel": "О растении",
   "catalogSelectPlant": "Выбрать",
   "catalogNoResults": "Растения не найдены",
-  "addManually": "Добавить вручную (нет в каталоге)"
+  "addManually": "Добавить вручную (нет в каталоге)",
+  "catalogWikiLink": "Открыть в Википедии →"
 }

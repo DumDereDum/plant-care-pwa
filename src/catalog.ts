@@ -23,6 +23,8 @@ export interface CatalogEntry {
   description_ru: string
   careTips?: string
   wikiUrl: string
+  /** Wikipedia thumbnail URL (330px wide). Used on catalog cards; requires network. */
+  photoUrl: string
 }
 
 export const CATALOG: CatalogEntry[] = [
@@ -45,6 +47,7 @@ export const CATALOG: CatalogEntry[] = [
       'Тропическое растение с характерными резными листьями. Хорошо адаптируется к разным условиям освещения, но предпочитает яркий рассеянный свет. Быстро растёт и может достигать внушительных размеров в комнатных условиях.',
     careTips: 'Wipe leaves with a damp cloth monthly to keep them dust-free. Mist occasionally or place near a humidifier.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Monstera_deliciosa',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Monstera_deliciosa2.jpg/400px-Monstera_deliciosa2.jpg',
   },
   {
     id: 'ficus-elastica',
@@ -65,6 +68,7 @@ export const CATALOG: CatalogEntry[] = [
       'Крупные блестящие листья тёмно-зелёного или бордового цвета. Неприхотливое и долговечное растение, которое при правильном уходе превращается в небольшое деревце.',
     careTips: 'Avoid moving it once settled — Ficus dislikes relocation. Keep away from drafts.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Ficus_elastica',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Ficus_elastica_leaves_02.JPG/400px-Ficus_elastica_leaves_02.JPG',
   },
   {
     id: 'epipremnum-aureum',
@@ -85,6 +89,7 @@ export const CATALOG: CatalogEntry[] = [
       'Одно из самых неприхотливых комнатных растений. Красиво свисает с полок и хорошо растёт при слабом освещении — идеальный выбор для начинающих.',
     careTips: 'Let the top inch of soil dry between waterings. Trim leggy vines to encourage bushy growth.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Epipremnum_aureum',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Money_Plant_%28Epipremnum_aureum%29_4.jpg/400px-Money_Plant_%28Epipremnum_aureum%29_4.jpg',
   },
   {
     id: 'sansevieria-trifasciata',
@@ -105,6 +110,7 @@ export const CATALOG: CatalogEntry[] = [
       'Практически неубиваемое растение. Переносит глубокую тень, засуху и небрежный уход, а ночью выделяет кислород — идеально для спальни.',
     careTips: 'Water sparingly — root rot is the only real risk. Completely drought-tolerant in winter.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Dracaena_trifasciata',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg/400px-Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg',
   },
   {
     id: 'spathiphyllum',
@@ -125,6 +131,7 @@ export const CATALOG: CatalogEntry[] = [
       'Элегантные белые цветы и насыщенно-зелёные листья. Одно из лучших воздухоочищающих растений для тенистых комнат; когда ему нужна вода, листья сами «просят» полива, опускаясь вниз.',
     careTips: 'Drooping leaves are a reliable signal to water. Keep out of direct sun to prevent leaf scorch.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Spathiphyllum',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Spathiphyllum_cochlearispathum_RTBG.jpg/400px-Spathiphyllum_cochlearispathum_RTBG.jpg',
   },
   {
     id: 'chlorophytum-comosum',
@@ -145,6 +152,7 @@ export const CATALOG: CatalogEntry[] = [
       'Неприхотливое и жизнерадостное растение с дугообразными пёстрыми листьями. Образует каскады «паучков», которые легко укоренить в воде или почве.',
     careTips: 'Brown leaf tips usually mean fluoride in tap water — switch to filtered or let water sit overnight.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Chlorophytum_comosum',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Hierbabuena_0611_Revised.jpg/400px-Hierbabuena_0611_Revised.jpg',
   },
   {
     id: 'zamioculcas-zamiifolia',
@@ -165,6 +173,7 @@ export const CATALOG: CatalogEntry[] = [
       'Архитектурная глянцевая листва, которая выглядит свежо круглый год. Запасает воду в корневищах, что делает его исключительно засухоустойчивым.',
     careTips: 'Overwatering is the main risk. Allow soil to dry completely before watering again.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Zamioculcas',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Zamioculcas_zamiifolia_1.jpg/400px-Zamioculcas_zamiifolia_1.jpg',
   },
   {
     id: 'aloe-vera',
@@ -185,6 +194,7 @@ export const CATALOG: CatalogEntry[] = [
       'Суккулент с целебным гелем в листьях, который веками применяется при ожогах и раздражении кожи. Требует яркого света и очень редкого полива.',
     careTips: 'Plant in well-draining cactus mix. Water deeply but infrequently; let soil dry out completely between waterings.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Aloe_vera',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Aloe_vera_flower_inset.png/400px-Aloe_vera_flower_inset.png',
   },
   {
     id: 'crassula-ovata',
@@ -205,6 +215,7 @@ export const CATALOG: CatalogEntry[] = [
       'Долгоживущий суккулент, способный за десятилетия превратиться в небольшое деревце. Считается символом удачи и богатства во многих культурах.',
     careTips: 'Needs several hours of direct sun daily. Water thoroughly then let soil dry completely.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Crassula_ovata',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Crassula_ovata_700.jpg/400px-Crassula_ovata_700.jpg',
   },
   {
     id: 'ficus-lyrata',
@@ -225,6 +236,7 @@ export const CATALOG: CatalogEntry[] = [
       'Эффектное растение с крупными листьями в форме скрипки. Требовательно к постоянству условий: его нельзя часто переставлять или держать на сквозняке.',
     careTips: 'Find a bright spot and do not move it. Inconsistent watering or drafts cause leaf drop.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Ficus_lyrata',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Starr_031108-0130_Ficus_lyrata.jpg/400px-Starr_031108-0130_Ficus_lyrata.jpg',
   },
   {
     id: 'calathea-orbifolia',
@@ -245,6 +257,7 @@ export const CATALOG: CatalogEntry[] = [
       'Потрясающие серебристо-полосатые листья, которые складываются на ночь в красивом природном ритме. Одно из самых декоративных лиственных растений.',
     careTips: 'Use distilled or rain water — Calatheas are sensitive to fluoride and chlorine. High humidity is essential.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Calathea_orbifolia',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Calathea_orbifolia_2.jpg/400px-Calathea_orbifolia_2.jpg',
   },
   {
     id: 'dracaena-marginata',
@@ -265,6 +278,7 @@ export const CATALOG: CatalogEntry[] = [
       'Эффектный силуэт с тонкими листьями с красной каймой на оголённых стеблях. Хорошо адаптируется к комнатным условиям и очищает воздух.',
     careTips: 'Let soil dry between waterings. Brown leaf tips indicate low humidity or fluoride in water.',
     wikiUrl: 'https://en.wikipedia.org/wiki/Dracaena_marginata',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Dracaena_reflexa.JPG/400px-Dracaena_reflexa.JPG',
   },
 ]
 

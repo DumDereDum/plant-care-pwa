@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CATALOG_SORTED, catalogEntryToGuideData, type CatalogEntry } from './catalog'
+import { catalogEntryToGuideData, type CatalogEntry } from './catalog'
 import { compressImage, imageMimeType } from './compressImage'
 import db, { type CareGuide } from './db'
+import CatalogBrowser from './CatalogBrowser'
 import Button from './ui/Button'
 import Card from './ui/Card'
 import { LeafIcon } from './ui/icons'
@@ -14,12 +15,13 @@ interface Props {
 }
 
 export default function AddPlantForm({ onAdded }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
   const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
   const [fertilizeIntervalDays, setFertilizeIntervalDays] = useState(14)
   const [catalogEntry, setCatalogEntry] = useState<CatalogEntry | null>(null)
+  const [browserOpen, setBrowserOpen] = useState(false)
   const [photo, setPhoto] = useState<ArrayBuffer | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -29,10 +31,8 @@ export default function AddPlantForm({ onAdded }: Props) {
   }, [photo])
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
-  function handleCatalogSelect(id: string) {
-    const entry = CATALOG_SORTED.find((e) => e.id === id) ?? null
+  function handleCatalogEntry(entry: CatalogEntry) {
     setCatalogEntry(entry)
-    if (!entry) return
     // Pre-fill name only when the field is still empty
     if (!name.trim()) setName(entry.commonName)
     if (entry.recommendedWateringIntervalDays) {
@@ -42,6 +42,7 @@ export default function AddPlantForm({ onAdded }: Props) {
       setFertilizeEnabled(true)
       setFertilizeIntervalDays(entry.fertilizeIntervalDays)
     }
+    setBrowserOpen(false)
   }
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -69,7 +70,7 @@ export default function AddPlantForm({ onAdded }: Props) {
 
     if (catalogEntry) {
       const guideId = (await db.careGuides.add(
-        catalogEntryToGuideData(catalogEntry) as CareGuide,
+        catalogEntryToGuideData(catalogEntry, i18n.language) as CareGuide,
       )) as number
       await db.plants.update(plantId, { careGuideId: guideId })
     }
@@ -84,6 +85,14 @@ export default function AddPlantForm({ onAdded }: Props) {
   }
 
   return (
+    <>
+    {browserOpen && (
+      <CatalogBrowser
+        onSelect={handleCatalogEntry}
+        onAddManually={() => setBrowserOpen(false)}
+        onClose={() => setBrowserOpen(false)}
+      />
+    )}
     <Card className={styles.card}>
       <div className={styles.photo} onClick={() => fileInputRef.current?.click()}>
         {previewUrl ? (
@@ -106,23 +115,19 @@ export default function AddPlantForm({ onAdded }: Props) {
       />
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* Species picker — prefills fields and seeds a care guide */}
+        {/* Species picker — opens the full catalog browser */}
         <div className={styles.field}>
-          <span className={styles.fieldLabel}>{t('labelSpeciesSearch')}</span>
-          <select
-            className={styles.select}
-            value={catalogEntry?.id ?? ''}
-            onChange={(e) => handleCatalogSelect(e.target.value)}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setBrowserOpen(true)}
           >
-            <option value="">{t('speciesPickerPlaceholder')}</option>
-            {CATALOG_SORTED.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.commonName} — {entry.latinName}
-              </option>
-            ))}
-          </select>
+            {t('browseCatalog')}
+          </Button>
           {catalogEntry && (
-            <span className={styles.hint}>{t('speciesPickerHint')}</span>
+            <span className={styles.hint}>
+              {t('selectedSpecies', { name: catalogEntry.commonName })}
+            </span>
           )}
         </div>
 
@@ -189,5 +194,6 @@ export default function AddPlantForm({ onAdded }: Props) {
         </div>
       </form>
     </Card>
+    </>
   )
 }

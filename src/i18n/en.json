@@ -154,5 +154,15 @@
   "achievementsNextCount": "{{current}} / {{target}} waterings for {{badge}}",
 
   "summaryScore": "Score: {{score}} pts",
-  "summaryStreak": "Best streak: {{count}}"
+  "summaryStreak": "Best streak: {{count}}",
+
+  "browseCatalog": "Browse catalog",
+  "selectedSpecies": "Species: {{name}}",
+  "catalogBrowserTitle": "Plant Catalog",
+  "catalogSearchPlaceholder": "Search plants…",
+  "catalogClose": "Close",
+  "catalogInfoLabel": "Plant info",
+  "catalogSelectPlant": "Select this plant",
+  "catalogNoResults": "No plants found",
+  "addManually": "Add manually (not in catalog)"
 }

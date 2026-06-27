@@ -19,8 +19,10 @@ export interface CatalogEntry {
   perks?: string[]
   recommendedWateringIntervalDays?: number
   fertilizeIntervalDays?: number
-  description?: string
+  description_en: string
+  description_ru: string
   careTips?: string
+  wikiUrl: string
 }
 
 export const CATALOG: CatalogEntry[] = [
@@ -37,8 +39,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'airPurifying'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 30,
-    description: 'Tropical beauty with iconic split leaves. Adapts to a range of light conditions but thrives in bright indirect light.',
+    description_en:
+      'Tropical beauty with iconic split leaves. Adapts to a range of light conditions but thrives in bright indirect light. A fast grower that can reach impressive sizes indoors.',
+    description_ru:
+      'Тропическое растение с характерными резными листьями. Хорошо адаптируется к разным условиям освещения, но предпочитает яркий рассеянный свет. Быстро растёт и может достигать внушительных размеров в комнатных условиях.',
     careTips: 'Wipe leaves with a damp cloth monthly to keep them dust-free. Mist occasionally or place near a humidifier.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Monstera_deliciosa',
   },
   {
     id: 'ficus-elastica',
@@ -53,8 +59,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'airPurifying'],
     recommendedWateringIntervalDays: 10,
     fertilizeIntervalDays: 30,
-    description: 'Bold glossy leaves in deep green or burgundy. Tolerant and long-lived indoors.',
+    description_en:
+      'Bold glossy leaves in deep green or burgundy. Tolerant and long-lived indoors, easily growing into a small tree with the right conditions.',
+    description_ru:
+      'Крупные блестящие листья тёмно-зелёного или бордового цвета. Неприхотливое и долговечное растение, которое при правильном уходе превращается в небольшое деревце.',
     careTips: 'Avoid moving it once settled — Ficus dislikes relocation. Keep away from drafts.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Ficus_elastica',
   },
   {
     id: 'epipremnum-aureum',
@@ -69,8 +79,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'airPurifying'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 60,
-    description: 'One of the most forgiving houseplants. Trails beautifully from shelves and thrives in low light.',
+    description_en:
+      'One of the most forgiving houseplants. Trails beautifully from shelves and thrives in low light, making it perfect for beginners.',
+    description_ru:
+      'Одно из самых неприхотливых комнатных растений. Красиво свисает с полок и хорошо растёт при слабом освещении — идеальный выбор для начинающих.',
     careTips: 'Let the top inch of soil dry between waterings. Trim leggy vines to encourage bushy growth.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Epipremnum_aureum',
   },
   {
     id: 'sansevieria-trifasciata',
@@ -85,8 +99,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'oxygenBoost'],
     recommendedWateringIntervalDays: 14,
     fertilizeIntervalDays: 60,
-    description: 'Nearly indestructible. Tolerates deep shade, drought, and neglect with ease.',
+    description_en:
+      'Nearly indestructible. Tolerates deep shade, drought, and neglect with ease, and releases oxygen at night making it ideal for bedrooms.',
+    description_ru:
+      'Практически неубиваемое растение. Переносит глубокую тень, засуху и небрежный уход, а ночью выделяет кислород — идеально для спальни.',
     careTips: 'Water sparingly — root rot is the only real risk. Completely drought-tolerant in winter.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Dracaena_trifasciata',
   },
   {
     id: 'spathiphyllum',
@@ -101,8 +119,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'airPurifying'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 30,
-    description: 'Elegant white blooms and deep green leaves. One of the best air-purifying plants for low-light rooms.',
+    description_en:
+      'Elegant white blooms and deep green leaves. One of the best air-purifying plants for low-light rooms, also signaling when it needs water by drooping its leaves.',
+    description_ru:
+      'Элегантные белые цветы и насыщенно-зелёные листья. Одно из лучших воздухоочищающих растений для тенистых комнат; когда ему нужна вода, листья сами «просят» полива, опускаясь вниз.',
     careTips: 'Drooping leaves are a reliable signal to water. Keep out of direct sun to prevent leaf scorch.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Spathiphyllum',
   },
   {
     id: 'chlorophytum-comosum',
@@ -117,8 +139,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['airPurifying'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 30,
-    description: 'Hardy and cheerful with arching variegated leaves. Produces cascading "spiderettes" that can be propagated.',
+    description_en:
+      'Hardy and cheerful with arching variegated leaves. Produces cascading "spiderettes" that can be easily propagated in water or soil.',
+    description_ru:
+      'Неприхотливое и жизнерадостное растение с дугообразными пёстрыми листьями. Образует каскады «паучков», которые легко укоренить в воде или почве.',
     careTips: 'Brown leaf tips usually mean fluoride in tap water — switch to filtered or let water sit overnight.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Chlorophytum_comosum',
   },
   {
     id: 'zamioculcas-zamiifolia',
@@ -133,8 +159,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs'],
     recommendedWateringIntervalDays: 14,
     fertilizeIntervalDays: 60,
-    description: 'Architectural glossy foliage. Stores water in its rhizomes, making it exceptionally drought-tolerant.',
+    description_en:
+      'Architectural glossy foliage that stays fresh-looking year-round. Stores water in its rhizomes, making it exceptionally drought-tolerant.',
+    description_ru:
+      'Архитектурная глянцевая листва, которая выглядит свежо круглый год. Запасает воду в корневищах, что делает его исключительно засухоустойчивым.',
     careTips: 'Overwatering is the main risk. Allow soil to dry completely before watering again.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Zamioculcas',
   },
   {
     id: 'aloe-vera',
@@ -149,8 +179,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['unsafeChildren'],
     recommendedWateringIntervalDays: 14,
     fertilizeIntervalDays: 90,
-    description: 'Succulent with soothing gel inside its leaves. Needs bright light and very little water.',
+    description_en:
+      'Succulent with soothing gel inside its leaves used for centuries to treat burns and skin irritation. Needs bright light and very little water.',
+    description_ru:
+      'Суккулент с целебным гелем в листьях, который веками применяется при ожогах и раздражении кожи. Требует яркого света и очень редкого полива.',
     careTips: 'Plant in well-draining cactus mix. Water deeply but infrequently; let soil dry out completely between waterings.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Aloe_vera',
   },
   {
     id: 'crassula-ovata',
@@ -165,8 +199,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs'],
     recommendedWateringIntervalDays: 14,
     fertilizeIntervalDays: 60,
-    description: 'Long-lived succulent that can become a small tree over decades. Said to bring good luck.',
+    description_en:
+      'Long-lived succulent that can become a small tree over decades. Considered a symbol of good luck and prosperity in many cultures.',
+    description_ru:
+      'Долгоживущий суккулент, способный за десятилетия превратиться в небольшое деревце. Считается символом удачи и богатства во многих культурах.',
     careTips: 'Needs several hours of direct sun daily. Water thoroughly then let soil dry completely.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Crassula_ovata',
   },
   {
     id: 'ficus-lyrata',
@@ -181,8 +219,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 30,
-    description: 'Statement plant with large violin-shaped leaves. Rewarding but requires consistent conditions.',
+    description_en:
+      'Statement plant with large violin-shaped leaves. Rewarding but requires consistent conditions — avoid moving it or exposing it to drafts.',
+    description_ru:
+      'Эффектное растение с крупными листьями в форме скрипки. Требовательно к постоянству условий: его нельзя часто переставлять или держать на сквозняке.',
     careTips: 'Find a bright spot and do not move it. Inconsistent watering or drafts cause leaf drop.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Ficus_lyrata',
   },
   {
     id: 'calathea-orbifolia',
@@ -197,8 +239,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['airPurifying'],
     recommendedWateringIntervalDays: 7,
     fertilizeIntervalDays: 30,
-    description: 'Stunning silver-striped leaves. Folds its leaves at night — a beautiful natural rhythm.',
+    description_en:
+      'Stunning silver-striped leaves that fold up at night in a beautiful natural rhythm. One of the most eye-catching foliage plants.',
+    description_ru:
+      'Потрясающие серебристо-полосатые листья, которые складываются на ночь в красивом природном ритме. Одно из самых декоративных лиственных растений.',
     careTips: 'Use distilled or rain water — Calatheas are sensitive to fluoride and chlorine. High humidity is essential.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Calathea_orbifolia',
   },
   {
     id: 'dracaena-marginata',
@@ -213,8 +259,12 @@ export const CATALOG: CatalogEntry[] = [
     perks: ['toxicCats', 'toxicDogs', 'airPurifying'],
     recommendedWateringIntervalDays: 10,
     fertilizeIntervalDays: 60,
-    description: 'Dramatic spiky silhouette with thin red-edged leaves on bare canes. Very adaptable.',
+    description_en:
+      'Dramatic spiky silhouette with thin red-edged leaves on bare canes. Very adaptable to indoor conditions and a reliable air purifier.',
+    description_ru:
+      'Эффектный силуэт с тонкими листьями с красной каймой на оголённых стеблях. Хорошо адаптируется к комнатным условиям и очищает воздух.',
     careTips: 'Let soil dry between waterings. Brown leaf tips indicate low humidity or fluoride in water.',
+    wikiUrl: 'https://en.wikipedia.org/wiki/Dracaena_marginata',
   },
 ]
 
@@ -224,7 +274,11 @@ export const CATALOG_SORTED = [...CATALOG].sort((a, b) =>
 )
 
 /** Convert a catalog entry into a CareGuide payload ready for db.careGuides.add(). */
-export function catalogEntryToGuideData(entry: CatalogEntry): Omit<CareGuide, 'id'> {
+export function catalogEntryToGuideData(
+  entry: CatalogEntry,
+  locale = 'en',
+): Omit<CareGuide, 'id'> {
+  const description = locale.startsWith('ru') ? entry.description_ru : entry.description_en
   return {
     species: entry.latinName,
     light: entry.light,
@@ -235,7 +289,7 @@ export function catalogEntryToGuideData(entry: CatalogEntry): Omit<CareGuide, 'i
     tempMax: entry.tempMax,
     perks: entry.perks ? [...entry.perks] : undefined,
     recommendedWateringIntervalDays: entry.recommendedWateringIntervalDays,
-    description: entry.description,
+    description,
     careTips: entry.careTips,
     source: 'catalog' as const,
   }

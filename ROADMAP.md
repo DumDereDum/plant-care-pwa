@@ -1,308 +1,237 @@
-# Plant Care PWA — Feature Roadmap
+# Plant Care PWA — Roadmap
 
-Post-MVP roadmap: redesign + plant detail / care guide + calendar. The MVP
-(phases 1–8, see `BUILD_PLAN.md`) is functionally done; this file tracks the next
-batch of work.
+All work through Phase 14 is complete (MVP + redesign + care events + fertilize
+reminders + basic 12-species catalog). This file tracks what comes next.
 
-> This is the **living progress file**. The agent updates it: when a task is
-> finished, tick its checkbox, append `— done YYYY-MM-DD, <one-line note>`, and
-> update the **Data model** section if the schema changed.
+> **Living progress file.** When a task finishes: tick the checkbox, append
+> `— done YYYY-MM-DD, <one-line note>`, and update any data-model sections if
+> the schema changed.
 
 ## How to use this file
 
 1. Copy one task's **Task** text into the chat. One task per turn — never merge two.
-2. Let it run; review the diff (plan mode for multi-file changes).
-3. Run the task's **Verify** step. Green → commit with a small message → tick the box.
-4. Every task implicitly ends with: *list changed files, how to verify, risks*
-   (the `CLAUDE.md` footer convention — no need to repeat it each time).
+2. Let it run; use plan mode (Shift+Tab) for multi-file changes.
+3. Run the task's **Verify** step. Green → commit → tick the box.
+4. Every task ends with: *files changed, how to verify, risks* (CLAUDE.md rule — no
+   need to repeat it each time).
 
-## Decisions locked (2026-06-25)
+---
 
-- **Styling:** plain CSS + CSS custom properties mapped from `DESIGN.md`. **No Tailwind**
-  (minimal-dependencies rule wins; `PROJECT_CONTEXT.md` says Tailwind — that line is now
-  superseded and should be corrected in T9.1).
-- **Fonts:** Fredoka (display) + Nunito Sans (UI). **Self-hosted/bundled** woff2 — the app
-  must work offline, so no Google Fonts CDN at runtime.
-- **Care info = separate table** (`careGuides`) inside the same `plant-care-db`. It holds
-  *recommendations*; the plant links to a guide but keeps its own actual watering interval,
-  so the user can follow the recommendation or not.
-- **Game-format stats:** light ☀️, water 💧, humidity, temperature range, difficulty.
-- **Passive perks (game-style badges):** an extensible `perks` list on the care guide,
-  shown as small badges — both negative (toxic to cats/dogs, unsafe for children, allergenic)
-  and positive (air-purifying, oxygen boost, collects dust). Each known perk gets an icon +
-  i18n label + tone (good/bad/neutral); e.g. crossed-out cat = toxic for cats, cat-in-heart =
-  pet-safe. The list is open so the AI can fill more perks later.
-- **Care guide catalog:** designed into the architecture now (guides are standalone,
-  reusable, can act as templates), but the actual bundled/AI-generated catalog content lands
-  later (Phase 14). For now guides are hand-filled per plant.
-- **Card flip:** triggered by a small **flip button**, not tapping the whole card (avoids
-  conflicts with the card's own buttons).
-- **Calendar:** month grid + upcoming watering dates, **plus** persisted watering history
-  (`careLog` table). Watering-only for now; other event types (fertilize/repot) are designed
-  into the schema but shipped later (Phase 14). Achievements/points = Phase 13.
-- **DB rules (unchanged):** never rename `plant-care-db`; never create a second IndexedDB;
-  schema changes only via `db.version(n).stores(...).upgrade(...)` with an incremented
-  version; never break export/import — update it in the same task as any schema change.
+## Current DB state
 
-## Data model (target)
+**Version 5** (IndexedDB shows 50).
 
-Current (v1): `Plant { id, name, wateringIntervalDays, lastWateredAt, photo? }`
-
-| Version | Change | Status |
+| Dexie ver | IndexedDB ver | Change |
 |---|---|---|
-| v1 | `plants` | ✅ shipped |
-| v2 | add `careGuides` table + `Plant.careGuideId?` | ✅ shipped (T11.1) |
-| v3 | add `careLog` table (watering history) | ⬜ T12.1 |
+| 1 | 10 | `plants` |
+| 2 | 20 | `careGuides`, `Plant.careGuideId` |
+| 3 | 30 | `careLogs` |
+| 4 | 40 | `Plant.photo` Blob → ArrayBuffer |
+| 5 | 50 | `Plant.fertilizeIntervalDays?`, `Plant.lastFertilizedAt?` |
+
+---
+
+## Phase 15 — Advanced plant catalog (main focus)
+
+The goal: when the user taps "Add Plant", a full browseable catalog opens instead of
+the current small species dropdown. Each card shows a plant illustration, its name, and
+perk badges. Tapping flips the card to a back face with a short description, care tips,
+and a Wikipedia link. Selecting from the catalog pre-fills all fields and creates a care
+guide automatically.
+
+Data source: Wikipedia plant articles — parsed offline (a local Node script),
+summarized to 2–3 sentences, and bundled into `catalog.ts` as plain text. No runtime
+network call; everything works offline.
+
+### T15.1 — Enrich catalog entries with description + Wikipedia link — done 2026-06-26
+
+Extend the `CatalogEntry` type in `src/catalog.ts` with:
 
 ```ts
-// v2 — recommendations, separate from the plant's actual schedule.
-// Standalone & reusable: a guide is a template that can later be seeded from a
-// bundled / AI-generated catalog, not hard-bound to one plant.
-interface CareGuide {
-  id: number
-  species?: string                 // common/Latin name, free text for now
-  light?: 1 | 2 | 3 | 4 | 5        // suns
-  water?: 1 | 2 | 3 | 4 | 5        // drops (thirstiness)
-  humidity?: 1 | 2 | 3 | 4 | 5
-  difficulty?: 1 | 2 | 3 | 4 | 5
-  tempMin?: number                 // °C comfort range
-  tempMax?: number
-  perks?: PerkKey[]                // passive game-style badges (see below)
-  recommendedWateringIntervalDays?: number  // the recommendation (may differ from plant's)
-  description?: string             // about the plant
-  careTips?: string                // how to care
-  source?: 'user' | 'catalog'      // architectural hook for the future catalog (Phase 14)
-}
-
-// Open, extensible set — start small, AI/catalog adds more later. Each key maps to
-// an icon + i18n label + tone (good | bad | neutral) in the UI layer.
-type PerkKey =
-  | 'toxicCats' | 'toxicDogs' | 'unsafeChildren' | 'allergenic'   // negative
-  | 'airPurifying' | 'oxygenBoost' | 'dustCollecting'             // positive
-// (string-typed so unknown keys from a future catalog don't break old builds)
-
-// Plant gains: careGuideId?: number   (optional link; null/undefined = no guide yet)
-
-// v3 — history of care events
-interface CareLog {
-  id: number
-  plantId: number
-  type: 'water'                    // schema-extensible later: 'fertilize' | 'repot' (Phase 14)
-  date: Date
-}
+description: string   // 2–3 sentence summary (en + ru)
+wikiUrl: string       // https://en.wikipedia.org/wiki/<Article>
 ```
 
----
+For each of the 12 existing species, write a hand-curated 2–3 sentence care
+description in both English and Russian (bilingual catalog; store as
+`description_en` / `description_ru`, or use a nested `{ en, ru }` object —
+pick whichever keeps `catalog.ts` clean). Add the corresponding Wikipedia URL.
 
-## Phase 9 — Design foundation
+Keep the file 100% static (no fetch at runtime). All 12 entries must have
+non-empty `description` and `wikiUrl` before this task is considered done.
 
-- [x] **T9.1 — Design tokens, fonts, reset** — done 2026-06-25: DESIGN.md tokens as CSS
-  vars (+ derived dark palette), self-hosted Comfortaa + Nunito Sans (latin+cyrillic woff2,
-  precached for offline), base reset + mobile app shell; removed dead template CSS.
-  Note: display font is **Comfortaa**, not Fredoka (Fredoka has no Cyrillic) — DESIGN.md updated.
-  Task: Lay the styling foundation from `DESIGN.md`, no Tailwind. (1) Add CSS custom
-  properties for all `DESIGN.md` color tokens, radius, spacing scale, and the single soft
-  shadow; support the dark palette via `prefers-color-scheme`. (2) Self-host Fredoka and
-  Nunito Sans as bundled woff2 (must work offline; no CDN) and wire them to display/body.
-  (3) Replace the leftover Vite template CSS in `App.css`/`index.css` (hero, counter, etc.)
-  with a clean base reset and app shell. (4) Update the styling line in `PROJECT_CONTEXT.md`
-  to "plain CSS + CSS variables, no Tailwind".
-  Verify: app renders with new fonts/colors; build + lint clean; offline still works after
-  rebuild (fonts load with no network).
+**Task:** Extend `CatalogEntry` with `description_en`, `description_ru`, and `wikiUrl`.
+Fill all 12 existing entries. Update `catalogEntryToGuideData()` to include
+`description` (pick the locale at call time based on `i18n.language`). Update the
+TypeScript types; build + lint must pass.
 
-- [x] **T9.2 — Reusable UI primitives** — done 2026-06-25: `src/ui/` with Card, Button
-  (primary/secondary, 48px, press feedback), StatusPill (green/coral/amber), StatBar (1–5
-  suns/drops, a11y label via i18n `ratingValue`), CSS Modules. Card+StatusPill+Button wired
-  live into PlantCard; StatBar built & lint-clean, wired for real in T11.3 (needs careGuide data).
-  Task: Add small reusable components per `DESIGN.md`: `Card`, `Button` (primary/secondary,
-  ≥44px tap target, press feedback), `StatusPill` (coral/green/amber, color + text), and a
-  `StatBar` for 1–5 icon ratings (suns/drops). All text via i18n. No screen rewrites yet —
-  just the primitives + a tiny usage in one existing place to prove them.
-  Verify: primitives render; tap targets ≥44px; build + lint clean.
-
-## Phase 10 — Redesign existing screens
-
-- [x] **T10.1 — Redesign "My Plants" list** — done 2026-06-25: PlantCard redesigned
-  (round avatar = photo or tinted leaf, name, status pill, Watered) as a vertical card stack;
-  tap opens a placeholder PlantDetail screen (hosts the photo add/change + watered moved off
-  the card, so nothing lost). Verified on mobile width via screenshots. Detail becomes the full
-  view in T11.2.
-  Task: Restyle the plant list as a card grid/list per `DESIGN.md`: round plant avatar
-  (photo or tinted leaf icon), name, status pill, "Watered" action. Tap a card opens the
-  detail screen (placeholder route/handler is fine until T11.2). Keep all strings in i18n.
-  Verify: list looks per design on a phone width; cards are tappable; nothing lost from the
-  old card (interval, next date, watered).
-
-- [x] **T10.2 — Redesign "Today" screen anchor** — done 2026-06-25: prominent summary
-  card as the single anchor (coral "N plants to water today" with big count / green "all
-  watered" when none due), calm overdue/today/soon buckets below using the redesigned cards,
-  friendly leaf empty state. All three states verified on mobile via screenshots.
-  Task: Make the Today screen's focal element a friendly summary card ("N plants to water
-  today"), the single visual anchor, with the overdue/today/soon buckets below using the new
-  card + pill primitives. Encouraging empty state.
-  Verify: summary card is the clear anchor; buckets correct; empty state friendly.
-
-- [x] **T10.3 — Bottom navigation + app shell** — done 2026-06-25: fixed bottom nav
-  (Today / Plants / Calendar / Help) with icons + labels, active state, safe-area-inset-bottom
-  padding; top nav replaced by a header (title + language switch); content padding clears the
-  nav. Calendar tab → placeholder CalendarScreen (real grid in T12.2). Verified on mobile:
-  tabs switch, tap targets 56×94px (≥44).
-  Task: Replace the top button nav with a mobile bottom navigation (Today / Plants /
-  Calendar / Help), respecting iOS safe-area insets (`env(safe-area-inset-*)`). Wire the
-  Calendar tab to a placeholder until Phase 12.
-  Verify: bottom nav works, no overlap with the iOS home indicator, tap targets ≥44px.
-
-## Phase 11 — Plant detail + care guide (flip card)
-
-- [x] **T11.1 — Migration v2: careGuides table (schema change)** — done 2026-06-25:
-  Dexie v2 (`version(2).stores(...).upgrade()`) adds standalone `careGuides` + `Plant.careGuideId?`
-  in the same `plant-care-db` (non-destructive). `CareGuide` matches the Data model above
-  (Rating 1–5, open `perks: string[]` with `PerkKey`/`KNOWN_PERKS`, `source`). Export/import
-  bumped to schemaVersion 2, includes guides, still imports v1 backups. Verified at runtime:
-  3 existing plants survived v1→v2; export→clear→import round-trips plants+guide+careGuideId;
-  v1 backup imports, future/malformed rejected.
-  Task: Add the `careGuides` table and `Plant.careGuideId?` via a Dexie v2 migration
-  (`version(2).stores(...).upgrade(...)`), in the SAME `plant-care-db` (do not create a
-  second database, do not rename). Add the `CareGuide` interface per the Data model section,
-  including the open `perks` list and the `source` field. Keep guides **standalone/reusable**
-  (a guide is not hard-bound to one plant) so a catalog can seed them later. No destructive
-  changes to existing plants. Update export/import so guides are included and old backups (no
-  guides) still import. Bump the export schema version.
-  Verify: existing plants survive the upgrade (load old DB → still there); export then import
-  round-trips plants + guides; build + lint clean. **This is a schema change — call out the
-  migration in the summary.**
-
-- [x] **T11.2 — Plant detail screen (front)** — done 2026-06-25: PlantDetail upgraded from
-  placeholder to the front face — large photo/avatar, name, status + next date, Watered,
-  change-photo, and an edit mode (name + interval with Save/Cancel). Removed the "coming soon"
-  note. Verified on mobile: edit persists (name + interval, status/next recalc), Watered
-  persists. Flip to the care guide (back face) comes in T11.3.
-  Task: Add a plant detail screen (front face): large photo, name, watering status + next
-  date, "Watered" button, change-photo, and edit name/interval. Reached by tapping a card in
-  the list. All strings via i18n.
-  Verify: open detail from list; watered/photo/edit all work and persist.
-
-- [ ] **T11.3 — Flip to care guide (game format)**
-  Task: Add a **flip button** on the detail card (not whole-card tap) that flips to the back
-  showing the linked care guide in game format: suns 1–5 (light), drops 1–5 (water), humidity,
-  temperature range, difficulty, plus a row of **perk badges** from `perks` (each with icon +
-  i18n label + good/bad/neutral tone — e.g. crossed-out cat = toxic for cats, cat-in-heart =
-  pet-safe, leaf = air-purifying), plus description/tips. Read-only here. If no guide is linked
-  yet, show a friendly "not filled in yet" placeholder with a "Fill in" CTA. Respect
-  `prefers-reduced-motion` (no flip animation when reduced).
-  Verify: flip button works both ways; stats + perk badges render from a guide; placeholder
-  shows when empty.
-
-- [ ] **T11.4 — Edit care guide form**
-  Task: Add a form to create/edit the care guide for a plant (fills the placeholder): the 1–5
-  steppers for light/water/humidity/difficulty, temperature min/max, a **perk picker**
-  (toggle the known `PerkKey`s — toxic cats/dogs, unsafe children, allergenic, air-purifying,
-  oxygen boost, dust-collecting), recommended interval, description, tips. Creating a guide
-  links it via `careGuideId`. Optional "apply recommended interval to this plant" button.
-  i18n throughout.
-  Verify: fill a guide → flip side shows it incl. perks; reload persists; "apply" updates the
-  plant's interval.
-
-## Phase 12 — Calendar + history
-
-- [ ] **T12.1 — Migration v3: careLog table (schema change)**
-  Task: Add a `careLog` table via a Dexie v3 migration for watering history (`CareLog` per the
-  Data model section). On "Watered", in addition to setting `lastWateredAt`, append a careLog
-  entry (`type: 'water'`, date = now). Include careLog in export/import; bump export schema
-  version; keep old backups importable. No destructive changes.
-  Verify: water a plant → a log row appears; existing data intact; export/import round-trips
-  history. **Schema change — call out the migration.**
-
-- [ ] **T12.2 — Calendar month grid**
-  Task: Build the Calendar screen: a month grid with prev/next navigation. Mark days with
-  upcoming watering due (from `nextWateringDate` projections) and overdue, plus past watering
-  events from `careLog`. Tap a day → list of plants due/watered that day, with a quick
-  "Watered" action. Mobile-first, i18n, localized month/day names via `Intl`.
-  Verify: due dates highlighted correctly; tapping a day shows the right plants; month nav
-  works; RU/EN month names correct.
-
-- [ ] **T12.3 — Watering history on plant detail**
-  Task: Show a plant's recent watering history (from `careLog`) on the detail screen — a short
-  list/timeline of past waterings with localized dates.
-  Verify: history matches logged events; updates after a new "Watered".
-
-## Phase 13 — Polish & gamification
-
-- [ ] **T13.1 — Micro-interactions**
-  Task: Add the small motions from `DESIGN.md`: a celebratory bounce/checkmark on "Watered",
-  150–200ms transitions, and the flip animation. All gated behind `prefers-reduced-motion`.
-  Verify: animations feel subtle; reduced-motion disables them.
-
-- [ ] **T13.2 — Empty / loading / error states**
-  Task: Give every screen on-brand empty, loading, and error states (encouraging copy, not
-  blank screens). i18n.
-  Verify: each screen shows a friendly state when empty/loading/failing.
-
-- [ ] **T13.3 — Real app icons**
-  Task: Replace the solid-green placeholder PWA icons with real artwork; add
-  `<link rel="apple-touch-icon">` to `index.html` (iOS ignores the manifest icons array).
-  Provide 192/512 + maskable.
-  Verify: home-screen icon looks right on iOS and Android after reinstall.
-
-- [ ] **T13.4 — Achievements / care points (bigger)**
-  Task: Award points/medals for good care, computed from `careLog`, guided by gamification
-  principles (streaks of not-missed waterings, milestones, progress toward the next badge —
-  not just raw counts). Read-only badges on detail/today. No backend — all derived locally.
-  Design the rule set before coding.
-  Verify: badges appear from real history; streaks/milestones compute correctly; nothing
-  fabricated.
-
-- [ ] **T13.5 — Locale & dead-code cleanup**
-  Task: Remove unused i18n keys (e.g. `lastWatered` no longer rendered) and any leftover
-  template assets (`src/assets/hero.png`, react/vite svgs) once unused.
-  Verify: build + lint clean; no missing-key warnings; nothing visually lost.
-
-## Phase 14 — Extended care & catalog (after the minimal product)
-
-Deferred on purpose: the goal first is a minimal working product. These build on hooks
-already designed into the schema (`careLog.type`, `CareGuide.source`, standalone guides).
-
-- [ ] **T14.1 — Other care events (fertilize / repot)**
-  Task: Extend care logging beyond watering using the existing `careLog.type` field
-  (`'fertilize' | 'repot'`, …): log them, show them on the plant detail history, and surface
-  them in the calendar alongside watering. Add optional recommended fertilize/repot intervals
-  to the care guide if useful. i18n throughout. No destructive schema change (the field
-  already exists).
-  Verify: logging a fertilize/repot event shows on detail + calendar; watering still works.
-
-- [ ] **T14.2 — Care guide catalog (bundled + AI-fillable)**
-  Task: Add a small bundled catalog of common species (Monstera, Ficus, Pothos, …) with
-  prefilled care guides, selectable when adding/editing a plant (copies a catalog guide into a
-  user guide, `source: 'catalog'`). Keep it 100% local (no backend); structure the catalog
-  data so it can be AI-generated/expanded later.
-  Verify: pick a species when adding a plant → its care guide is prefilled; user can still
-  edit it; offline works.
+**Verify:** `npx tsc --noEmit` clean. Open AddPlantForm, pick a species from the
+dropdown — no visible change yet, but `console.log` the created guide and confirm
+`description` is a non-empty string.
 
 ---
 
-## Backlog / ideas (not scheduled yet)
+### T15.2 — Catalog browser screen (grid of plant cards) — done 2026-06-26
 
-- **Plant graveyard / cemetery** 🪦 — instead of hard-deleting a plant, archive it with a
-  "deceased" status (architectural hook: add a `status`/`archivedAt` field to `Plant` rather
-  than deleting rows, so no care data is ever lost). A separate memorial view, and the kept
-  history feeds future watering/care insights. Far-off — but the soft-delete hook is cheap to
-  add whenever a delete-plant feature is built.
-- Reminders/notifications — **blocked by constraints** (no push in MVP; revisit only as
-  local in-app reminders, never server push).
-- Sorting/filtering the plant list (by next watering, name, room).
-- Rooms/locations grouping.
-- Themes beyond light/dark.
+Replace the species `<select>` in `AddPlantForm` with a "Browse catalog" button that
+opens a full-screen catalog browser (or large bottom sheet) overlaid on the Add form.
 
-## Resolved decisions (from the 2026-06-25 Q&A)
+Layout:
+- Search bar at the top (filters by name, case-insensitive, debounced).
+- Scrollable grid of cards (2 columns on mobile). Each card:
+  - Illustration placeholder (a tinted leaf SVG in the plant's dominant color, or a
+    real photo — see T15.3). Size: ~120×140 px.
+  - Common name (bold, Comfortaa).
+  - A row of up to 4 perk badge icons (e.g. toxic-cat, air-purifying).
+- Tapping a card **selects** it and closes the browser, pre-filling the Add form.
+- A small flip/info button (ℹ︎) on each card opens the card's back face (see T15.3).
+- "Add manually" link at the bottom for plants not in the catalog.
+- Full i18n (EN + RU).
 
-- Catalog: **lay into architecture now, fill via AI later** → guides are standalone/reusable
-  with a `source` field; the catalog itself is T14.2.
-- Toxicity → **passive perks system** with cats/dogs/children + positive perks
-  (air-purifying, oxygen, dust) — see `perks` in the Data model.
-- Calendar other events: **schema-ready now, feature later** → T14.1.
-- Flip: **flip button** (not whole-card tap) → T11.3.
-- Achievements: **gamification-driven** (streaks/milestones, not raw counts) → T13.4.
+This task is UI-only; connect it to the real catalog data. No flip animation yet
+(T15.3), just hide/show for the back face.
 
-## Ideas parking lot (add anytime)
+**Task:** Build `CatalogBrowser` component (new file `src/CatalogBrowser.tsx` +
+`src/CatalogBrowser.module.css`). Wire the "Browse catalog" button in `AddPlantForm`.
+Remove the old `<select>` for species (or hide it behind the browser). All strings via
+i18n. Build + lint clean.
 
-- _(drop new ideas here; promote them into a phase when ready)_
+**Verify:** Open "Add Plant" → "Browse catalog" opens a grid; search filters cards;
+tapping a card closes the browser and pre-fills name + watering interval in the form.
+Try on a 375 px-wide viewport (Chrome DevTools). EN/RU switch works in the browser.
+
+---
+
+### T15.3 — Card flip: back face with description + Wikipedia link
+
+Add a flip animation to catalog cards so the ℹ︎ button reveals the back face.
+
+Back face content:
+- Plant name (smaller, italic).
+- Description (2–3 sentences from `description_en` / `description_ru` based on current
+  locale).
+- Key stats summary: light ☀, water 💧, difficulty.
+- Perk badges (same as front).
+- "Open on Wikipedia →" link (opens in new tab, `rel="noopener noreferrer"`).
+- A "Select this plant" button.
+
+Animation: CSS 3D card flip on the Y-axis, 300 ms. Gate behind
+`prefers-reduced-motion` (instant swap, no animation).
+
+**Task:** Add a CSS flip animation to `CatalogBrowser` cards. Implement the back face
+per the spec above. The ℹ︎ button toggles front↔back; tapping anywhere on the back face
+**except** the Wikipedia link selects the plant. `prefers-reduced-motion` skips the
+animation. i18n for all back-face strings and the Wikipedia button label.
+
+**Verify:** ℹ︎ button flips the card; back face shows description + Wikipedia link;
+"Select this plant" closes the browser and pre-fills the form; link opens Wikipedia in
+a new tab; reduced-motion gives instant swap; EN↔RU switches description language live.
+
+---
+
+### T15.4 — Expand catalog to 40+ species
+
+Extend `src/catalog.ts` from 12 to ~40 species. Candidate list (add more as needed):
+
+> Monstera deliciosa, Rubber Plant, Pothos (Golden), Snake Plant, Peace Lily, Spider
+> Plant, ZZ Plant, Aloe Vera, Jade Plant, Fiddle-leaf Fig, Calathea, Dracaena,
+> Philodendron (Heartleaf), Boston Fern, Chinese Evergreen, Bird of Paradise, Cast Iron
+> Plant, Croton, Dieffenbachia, English Ivy, Flamingo Flower (Anthurium), Hoya
+> (Wax Plant), Orchid (Phalaenopsis), Parlor Palm, Ponytail Palm, Prayer Plant
+> (Maranta), Schefflera, String of Pearls, Umbrella Plant (Cyperus), African Violet,
+> Begonia, Bromeliad, Christmas Cactus, Clivia, Echeveria (Succulent), Haworthia,
+> Peperomia, Pilea (Chinese Money Plant), Tradescantia, Yucca.
+
+Each entry must have: `id`, `commonName`, `latinName`, light/water/humidity/difficulty
+(1–5), `tempMin`/`tempMax`, `recommendedWateringIntervalDays`,
+`fertilizeIntervalDays?`, `perks[]`, `description_en`, `description_ru`, `wikiUrl`.
+
+Research care data from Wikipedia/trusted sources. Keep descriptions ≤3 sentences.
+
+**Task:** Add ~28 new entries to `CATALOG` in `src/catalog.ts`, following the exact
+`CatalogEntry` shape. Re-sort `CATALOG_SORTED` alphabetically. Build + lint clean.
+
+**Verify:** Catalog browser shows 40+ cards; search works on new entries; build clean;
+no TypeScript errors.
+
+---
+
+### T15.5 — Catalog illustrations (SVG thumbnails)
+
+Give each catalog card a distinctive visual instead of a generic leaf.
+
+Approach: a small inline SVG "stamp" per genus/family — a simplified silhouette of the
+plant in 2–3 colors derived from the design palette. These are decorative; they do not
+need to be photorealistic. Size: 80×80 px viewBox, bundled (no external fetch).
+
+Alternatively: a color-coded background tile (gradient or pattern) with the first
+letter of the genus, styled per category (succulent = warm sand, tropical = deep
+green, etc.). Pick whichever is faster and looks better.
+
+**Task:** Design and implement a visual system for catalog card thumbnails. Create SVG
+assets or a CSS-based fallback. Wire them into `CatalogBrowser` cards (front face).
+Do not use external image URLs. Build + lint clean.
+
+**Verify:** Every card in the grid has a distinct visual; no broken images; works
+offline; build clean.
+
+---
+
+## Phase 16 — Minor UX improvements
+
+These are independent, small tasks. They can be done in any order after Phase 15 or
+interleaved if needed.
+
+- [ ] **T16.1 — Plant list search + sort**
+  Task: Add a search bar above the plant list (filters by name) and a sort picker
+  (by next watering, by name A–Z, by last watered). State is not persisted across
+  sessions (session-only). i18n. No new DB fields needed.
+  Verify: search filters live; sort changes order; clear search restores all plants.
+
+- [ ] **T16.2 — Plant notes**
+  Task: Extend `CareLog` with `note?: string`. Add a "Add note" quick-entry on the
+  plant detail screen (one-tap text field, saves a `CareLog` with `type: 'note'`).
+  Show notes in the plant history list with a note icon. Include notes in export/import.
+  No DB schema version change needed if `CareLog` already has the field — but if not,
+  increment the DB version and add a migration. Update export schema version.
+  Verify: add a note → appears in history; export → import round-trips the note.
+
+- [ ] **T16.3 — Plant archive (soft delete)**
+  Task: Add `Plant.archivedAt?: Date` via a DB v6 migration. "Archive" replaces "delete"
+  in the PlantDetail menu (long-press or a kebab menu). Archived plants are hidden from
+  all screens by default. A toggle "Show archived" in Settings reveals them with a
+  tombstone visual. Include `archivedAt` in export/import; bump export schema version.
+  Verify: archive a plant → disappears from list; toggle shows it; watering history is
+  preserved; export/import round-trips the field. Schema change — call out the migration.
+
+- [ ] **T16.4 — PWA badge count (Badging API)**
+  Task: When the app is in the background and plants are overdue, call
+  `navigator.setAppBadge(count)` with the number of overdue plants. Clear the badge
+  (`navigator.clearAppBadge()`) when the app is foregrounded and there are none overdue.
+  Gate behind feature detection (`'setAppBadge' in navigator`). No backend needed —
+  the badge is set from within the PWA's own JS. Update at app launch and when plants
+  are watered. i18n not relevant here.
+  Verify: add a plant overdue → iOS/Android home screen shows a badge number (requires
+  real device or browser with Badging API support); watering it clears the badge.
+
+- [ ] **T16.5 — "Share plant" card**
+  Task: Add a "Share" action on PlantDetail that uses the Web Share API
+  (`navigator.share`) to share a text card: plant name, species, care stats, and a
+  deep link back into the app (hash URL). Gate behind `'share' in navigator`. Fallback:
+  copy to clipboard. No images in the share payload (keep it simple). i18n.
+  Verify: share opens the native share sheet; text includes name + stats; fallback copies
+  to clipboard on desktop.
+
+---
+
+## Backlog / ideas (not scheduled)
+
+- Multiple photos per plant (a small gallery carousel on PlantDetail).
+- Rooms / locations grouping (tag each plant with a room; filter list by room).
+- Themes beyond light/dark (seasonal palettes).
+- Plant graveyard view (a memorial page for archived plants, Phase 16.3 hook).
+- AI-assisted plant identification (camera → species name) — **requires a backend or
+  third-party API; blocked by the no-backend constraint unless done entirely client-side
+  via a bundled/WASM model.**
+- Scheduled local notifications via the Notifications API (no push, triggered on
+  `visibilitychange` or SW `periodicsync` if available) — complex, deprioritized.

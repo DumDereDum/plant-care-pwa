@@ -166,5 +166,15 @@
   "achievementsNextCount": "{{current}} / {{target}} поливов → {{badge}}",
 
   "summaryScore": "{{score}} очков",
-  "summaryStreak": "Серия: {{count}}"
+  "summaryStreak": "Серия: {{count}}",
+
+  "browseCatalog": "Открыть каталог",
+  "selectedSpecies": "Вид: {{name}}",
+  "catalogBrowserTitle": "Каталог растений",
+  "catalogSearchPlaceholder": "Поиск растений…",
+  "catalogClose": "Закрыть",
+  "catalogInfoLabel": "О растении",
+  "catalogSelectPlant": "Выбрать",
+  "catalogNoResults": "Растения не найдены",
+  "addManually": "Добавить вручную (нет в каталоге)"
 }

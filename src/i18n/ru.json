@@ -168,6 +168,8 @@
   "summaryScore": "{{score}} очков",
   "summaryStreak": "Серия: {{count}}",
 
+  "labelLastWatered": "Последний полив",
+  "labelLastFertilized": "Последнее удобрение",
   "browseCatalog": "Открыть каталог",
   "selectedSpecies": "Вид: {{name}}",
   "catalogBrowserTitle": "Каталог растений",

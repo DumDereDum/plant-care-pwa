@@ -156,6 +156,8 @@
   "summaryScore": "Score: {{score}} pts",
   "summaryStreak": "Best streak: {{count}}",
 
+  "labelLastWatered": "Last watered",
+  "labelLastFertilized": "Last fertilized",
   "browseCatalog": "Browse catalog",
   "selectedSpecies": "Species: {{name}}",
   "catalogBrowserTitle": "Plant Catalog",

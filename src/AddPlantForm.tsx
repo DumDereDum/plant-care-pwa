@@ -23,6 +23,12 @@ export default function AddPlantForm({ onAdded }: Props) {
   const [catalogEntry, setCatalogEntry] = useState<CatalogEntry | null>(null)
   const [browserOpen, setBrowserOpen] = useState(false)
   const [photo, setPhoto] = useState<ArrayBuffer | null>(null)
+
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const [lastWateredEnabled, setLastWateredEnabled] = useState(true)
+  const [lastWateredDate, setLastWateredDate] = useState(todayStr)
+  const [lastFertilizedEnabled, setLastFertilizedEnabled] = useState(false)
+  const [lastFertilizedDate, setLastFertilizedDate] = useState(todayStr)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const previewUrl = useMemo(() => {
@@ -60,13 +66,26 @@ export default function AddPlantForm({ onAdded }: Props) {
     e.preventDefault()
     if (!name.trim()) return
 
+    const lastWateredAt = lastWateredEnabled ? new Date(lastWateredDate) : null
+    const lastFertilizedAt =
+      fertilizeEnabled && lastFertilizedEnabled ? new Date(lastFertilizedDate) : undefined
+
     const plantId = (await db.plants.add({
       name: name.trim(),
       wateringIntervalDays: Math.max(1, Math.round(intervalDays)),
-      lastWateredAt: null,
+      lastWateredAt,
       fertilizeIntervalDays: fertilizeEnabled ? Math.max(7, Math.round(fertilizeIntervalDays)) : undefined,
+      lastFertilizedAt,
       photo: photo ?? undefined,
     })) as number
+
+    // Create history entries so the past care shows up in the log
+    if (lastWateredAt) {
+      await db.careLogs.add({ plantId, type: 'water', date: lastWateredAt })
+    }
+    if (lastFertilizedAt) {
+      await db.careLogs.add({ plantId, type: 'fertilize', date: lastFertilizedAt })
+    }
 
     if (catalogEntry) {
       const guideId = (await db.careGuides.add(
@@ -81,6 +100,10 @@ export default function AddPlantForm({ onAdded }: Props) {
     setFertilizeIntervalDays(14)
     setCatalogEntry(null)
     setPhoto(null)
+    setLastWateredEnabled(true)
+    setLastWateredDate(new Date().toISOString().slice(0, 10))
+    setLastFertilizedEnabled(false)
+    setLastFertilizedDate(new Date().toISOString().slice(0, 10))
     onAdded()
   }
 
@@ -159,12 +182,37 @@ export default function AddPlantForm({ onAdded }: Props) {
           />
         </div>
 
+        {/* Last watered */}
+        <div className={styles.dateGroup}>
+          <label className={styles.toggle}>
+            <input
+              className={styles.toggleInput}
+              type="checkbox"
+              checked={lastWateredEnabled}
+              onChange={(e) => setLastWateredEnabled(e.target.checked)}
+            />
+            <span className={styles.toggleText}>{t('labelLastWatered')}</span>
+          </label>
+          {lastWateredEnabled && (
+            <input
+              className={`${styles.input} ${styles.dateInput}`}
+              type="date"
+              value={lastWateredDate}
+              max={todayStr}
+              onChange={(e) => setLastWateredDate(e.target.value)}
+            />
+          )}
+        </div>
+
         <label className={styles.toggle}>
           <input
             className={styles.toggleInput}
             type="checkbox"
             checked={fertilizeEnabled}
-            onChange={(e) => setFertilizeEnabled(e.target.checked)}
+            onChange={(e) => {
+              setFertilizeEnabled(e.target.checked)
+              if (e.target.checked) setLastFertilizedEnabled(false)
+            }}
           />
           <span className={styles.toggleText}>{t('trackFertilize')}</span>
         </label>
@@ -186,6 +234,30 @@ export default function AddPlantForm({ onAdded }: Props) {
                 background: `linear-gradient(to right, var(--color-primary) ${((fertilizeIntervalDays - 7) / 83) * 100}%, var(--color-border) ${((fertilizeIntervalDays - 7) / 83) * 100}%)`,
               }}
             />
+          </div>
+        )}
+
+        {/* Last fertilized — only when tracking fertilize */}
+        {fertilizeEnabled && (
+          <div className={styles.dateGroup}>
+            <label className={styles.toggle}>
+              <input
+                className={styles.toggleInput}
+                type="checkbox"
+                checked={lastFertilizedEnabled}
+                onChange={(e) => setLastFertilizedEnabled(e.target.checked)}
+              />
+              <span className={styles.toggleText}>{t('labelLastFertilized')}</span>
+            </label>
+            {lastFertilizedEnabled && (
+              <input
+                className={`${styles.input} ${styles.dateInput}`}
+                type="date"
+                value={lastFertilizedDate}
+                max={todayStr}
+                onChange={(e) => setLastFertilizedDate(e.target.value)}
+              />
+            )}
           </div>
         )}
 

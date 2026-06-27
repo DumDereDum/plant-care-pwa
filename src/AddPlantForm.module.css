@@ -157,3 +157,20 @@
   font-weight: 600;
   color: var(--color-muted);
 }
+
+/* ── Date group (toggle + optional date input) ── */
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.dateInput {
+  /* inherit .input, just add a bit of extra affordance */
+  color-scheme: light dark;
+}

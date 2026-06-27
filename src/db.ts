@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import { CATALOG } from './catalog'
 
 export interface CareLog {
   id: number
@@ -80,6 +81,14 @@ export interface CareGuide {
   recommendedWateringIntervalDays?: number
   description?: string
   careTips?: string
+  /**
+   * Stable slug of the bundled catalog species this guide was seeded from (CatalogEntry.id).
+   * This is the language-INDEPENDENT link to the catalog: rich species text (description, care
+   * sections, diseases, pests) is rendered live from the bilingual catalog by this id, so the
+   * UI always follows the current language instead of a snapshot frozen at add time. Undefined
+   * for user-authored guides. When set, stored `description`/`careTips` act only as a fallback.
+   */
+  catalogId?: string
   /** Where the data came from; hook for the future catalog (Phase 14). Defaults to 'user'. */
   source?: 'user' | 'catalog'
 }
@@ -159,6 +168,46 @@ db.version(5)
   })
   .upgrade(() => {
     // Existing plants get undefined for the new fields — no migration needed.
+  })
+
+// v6 — add CareGuide.catalogId (language-independent link to the bundled catalog) and
+// backfill it on existing catalog-seeded guides by matching the stored Latin name.
+// Non-destructive: catalogId is additive. For a guide that came from the catalog AND matches a
+// current catalog species, the single-language `description`/`careTips` snapshot is cleared so
+// the bilingual catalog text is shown instead — that text is catalog-derived (not user content)
+// and identical copy is still bundled, so nothing the user authored is lost. User-authored
+// guides (no Latin-name match) are left completely untouched. IndexedDB version becomes 60.
+db.version(6)
+  .stores({
+    plants: '++id, name, lastWateredAt, lastFertilizedAt, careGuideId',
+    careGuides: '++id, species, source, catalogId',
+    careLogs: '++id, plantId, date, type',
+  })
+  .upgrade(async (tx) => {
+    type LegacyGuide = {
+      id: number
+      species?: string
+      source?: 'user' | 'catalog'
+      catalogId?: string
+    }
+    const guides = await tx.table<LegacyGuide, number>('careGuides').toArray()
+    await Promise.all(
+      guides
+        .filter((g) => !g.catalogId)
+        .map((g) => {
+          const match = CATALOG.find((e) => e.latinName === g.species)
+          if (!match) return Promise.resolve(0)
+          const patch: { catalogId: string; description?: undefined; careTips?: undefined } = {
+            catalogId: match.id,
+          }
+          if (g.source === 'catalog') {
+            // Drop the frozen single-language snapshot; the bilingual catalog text takes over.
+            patch.description = undefined
+            patch.careTips = undefined
+          }
+          return tx.table('careGuides').update(g.id, patch)
+        }),
+    )
   })
 
 export default db

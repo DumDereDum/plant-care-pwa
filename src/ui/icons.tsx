@@ -245,3 +245,84 @@ export function CheckIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function InfoIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <line x1="12" y1="11" x2="12" y2="16" />
+      <circle cx="12" cy="7.5" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function SoilIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <rect x="3" y="8" width="18" height="3.2" rx="1.2" />
+      <rect x="3" y="13" width="18" height="3.2" rx="1.2" opacity="0.7" />
+      <rect x="3" y="18" width="18" height="3.2" rx="1.2" opacity="0.45" />
+    </svg>
+  )
+}
+
+export function SproutIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M11 21v-8h2v8z" />
+      <path d="M12 14C12 10 9 7.5 3.5 7.5 3.5 11.5 6.5 14 12 14z" />
+      <path d="M12 12.5c0-3.5 2.8-5.8 8-5.8 0 3.6-3 5.8-8 5.8z" />
+    </svg>
+  )
+}
+
+export function ScissorsIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="6" cy="18" r="3" />
+      <line x1="20" y1="4" x2="8.12" y2="15.88" />
+      <line x1="14.47" y1="14.48" x2="20" y2="20" />
+      <line x1="8.12" y1="8.12" x2="12" y2="12" />
+    </svg>
+  )
+}
+
+export function BugIcon({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="8" y="6" width="8" height="14" rx="4" />
+      <path d="M12 6V3.5" />
+      <path d="M10 4 8.8 2.8M14 4l1.2-1.2" />
+      <path d="M8 10.5H3.5M8 14.5H3M8 18H4" />
+      <path d="M16 10.5h4.5M16 14.5h5M16 18h4" />
+    </svg>
+  )
+}

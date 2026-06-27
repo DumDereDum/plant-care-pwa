@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { catalogEntryForGuide, localizedDescription } from './catalog'
 import type { CareGuide } from './db'
 import { PERK_CONFIG } from './perkConfig'
 import Button from './ui/Button'
@@ -38,7 +39,7 @@ interface Props {
 }
 
 export default function CareGuideFace({ guide, onFlip, onEdit }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   if (!guide) {
     return (
@@ -60,6 +61,15 @@ export default function CareGuideFace({ guide, onFlip, onEdit }: Props) {
   }
 
   const perks = getDisplayPerks(guide)
+
+  const catalogEntry = catalogEntryForGuide(guide)
+  // Catalog-linked guides render their description live from the bilingual catalog (so it follows
+  // the current language); a user-authored description, when present, takes precedence.
+  const displayDescription =
+    guide.description?.trim() ||
+    (catalogEntry
+      ? localizedDescription(catalogEntry, i18n.resolvedLanguage ?? i18n.language)
+      : undefined)
 
   const tempText = (() => {
     const { tempMin: min, tempMax: max } = guide
@@ -141,10 +151,10 @@ export default function CareGuideFace({ guide, onFlip, onEdit }: Props) {
         </div>
       )}
 
-      {guide.description && (
+      {displayDescription && (
         <div className={styles.section}>
           <h4 className={styles.sectionTitle}>{t('careDescription')}</h4>
-          <p className={styles.sectionText}>{guide.description}</p>
+          <p className={styles.sectionText}>{displayDescription}</p>
         </div>
       )}
 

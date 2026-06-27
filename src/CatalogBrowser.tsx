@@ -1,8 +1,32 @@
 import { useEffect, useRef, useState } from 'react'
+import type { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CATALOG_SORTED, type CatalogEntry } from './catalog'
+import {
+  CATALOG_SORTED,
+  type Ailment,
+  type CatalogEntry,
+  type LocalizedText,
+  type PropagationMethod,
+} from './catalog'
 import { PERK_CONFIG } from './perkConfig'
-import { DropIcon, HumidityIcon, LeafIcon, StarIcon, SunIcon, ThermometerIcon } from './ui/icons'
+import {
+  AlertCircleIcon,
+  BugIcon,
+  DropIcon,
+  FertilizeIcon,
+  FlowerIcon,
+  HumidityIcon,
+  InfoIcon,
+  LeafIcon,
+  RepotIcon,
+  ScissorsIcon,
+  SoilIcon,
+  SparkleIcon,
+  SproutIcon,
+  StarIcon,
+  SunIcon,
+  ThermometerIcon,
+} from './ui/icons'
 import styles from './CatalogBrowser.module.css'
 
 interface Props {
@@ -12,6 +36,93 @@ interface Props {
 }
 
 // ── Plant detail panel ─────────────────────────────────────────────────────────
+
+/** Care-section render order + icon + title key. Mirrors the reference «Советы по уходу». */
+const CARE_TOPIC_ORDER = [
+  { key: 'appearance', Icon: InfoIcon, titleKey: 'secAppearance' },
+  { key: 'watering', Icon: DropIcon, titleKey: 'secWatering' },
+  { key: 'temperature', Icon: ThermometerIcon, titleKey: 'secTemperature' },
+  { key: 'light', Icon: SunIcon, titleKey: 'secLight' },
+  { key: 'humidity', Icon: HumidityIcon, titleKey: 'secHumidity' },
+  { key: 'fertilizer', Icon: FertilizeIcon, titleKey: 'secFertilizer' },
+  { key: 'soil', Icon: SoilIcon, titleKey: 'secSoil' },
+  { key: 'repotting', Icon: RepotIcon, titleKey: 'secRepotting' },
+  { key: 'pruning', Icon: ScissorsIcon, titleKey: 'secPruning' },
+  { key: 'flowering', Icon: FlowerIcon, titleKey: 'secFlowering' },
+  { key: 'phytodesign', Icon: SparkleIcon, titleKey: 'secPhytodesign' },
+] as const
+
+/** One care metric rendered as an icon + label + 5-dot rating. */
+function StatBlock({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+  return (
+    <div className={styles.statBlock}>
+      <div className={styles.statBlockIcon}>{icon}</div>
+      <span className={styles.statBlockLabel}>{label}</span>
+      <div className={styles.statBlockDots}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <span
+            key={i}
+            className={`${styles.dot} ${i < value ? styles.dotFilled : styles.dotEmpty}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+interface ChipItem {
+  id: string
+  name: string
+  content: ReactNode
+}
+
+/** A care topic whose items expand inline on tap (propagation methods, diseases, pests). */
+function ChipGroup({
+  groupId,
+  Icon,
+  title,
+  items,
+  openItem,
+  setOpenItem,
+}: {
+  groupId: string
+  Icon: FC<{ className?: string }>
+  title: string
+  items: ChipItem[]
+  openItem: string | null
+  setOpenItem: (v: string | null) => void
+}) {
+  return (
+    <div className={styles.careTopic}>
+      <div className={styles.careTopicHead}>
+        <span className={styles.careTopicIcon}><Icon className={styles.careTopicIconSvg} /></span>
+        <span className={styles.careTopicTitle}>{title}</span>
+      </div>
+      <div className={styles.chipRow}>
+        {items.map((it) => {
+          const k = `${groupId}:${it.id}`
+          const open = openItem === k
+          return (
+            <button
+              key={it.id}
+              type="button"
+              className={`${styles.chip} ${open ? styles.chipOpen : ''}`}
+              aria-expanded={open}
+              onClick={() => setOpenItem(open ? null : k)}
+            >
+              {it.name}
+            </button>
+          )
+        })}
+      </div>
+      {items.map((it) =>
+        openItem === `${groupId}:${it.id}` ? (
+          <div className={styles.chipDetail} key={it.id}>{it.content}</div>
+        ) : null,
+      )}
+    </div>
+  )
+}
 
 interface DetailProps {
   entry: CatalogEntry
@@ -24,6 +135,9 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
   const isRu = i18n.language.startsWith('ru')
   const description = isRu ? entry.description_ru : entry.description_en
   const perks = entry.perks ?? []
+  // Currently expanded chip, keyed as `${groupId}:${itemId}`; null = all collapsed.
+  const [openItem, setOpenItem] = useState<string | null>(null)
+  const L = (txt: LocalizedText) => (isRu ? txt.ru : txt.en)
 
   // Trap focus / close on Escape
   useEffect(() => {
@@ -34,30 +148,38 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  function StatBlock({
-    icon,
-    label,
-    value,
-  }: {
-    icon: React.ReactNode
-    label: string
-    value: number
-  }) {
-    return (
-      <div className={styles.statBlock}>
-        <div className={styles.statBlockIcon}>{icon}</div>
-        <span className={styles.statBlockLabel}>{label}</span>
-        <div className={styles.statBlockDots}>
-          {Array.from({ length: 5 }, (_, i) => (
-            <span
-              key={i}
-              className={`${styles.dot} ${i < value ? styles.dotFilled : styles.dotEmpty}`}
-            />
-          ))}
-        </div>
-      </div>
-    )
-  }
+  const renderAilment = (a: Ailment) => (
+    <>
+      {a.description && <p className={styles.chipText}>{L(a.description)}</p>}
+      {a.signs && (
+        <p className={styles.chipText}>
+          <b className={styles.chipLabel}>{t('ailmentSigns')}: </b>
+          {L(a.signs)}
+        </p>
+      )}
+      {a.prevention && (
+        <p className={styles.chipText}>
+          <b className={styles.chipLabel}>{t('ailmentPrevention')}: </b>
+          {L(a.prevention)}
+        </p>
+      )}
+      {a.treatment && (
+        <p className={styles.chipText}>
+          <b className={styles.chipLabel}>{t('ailmentTreatment')}: </b>
+          {L(a.treatment)}
+        </p>
+      )}
+    </>
+  )
+
+  const careTopics = entry.care
+    ? CARE_TOPIC_ORDER.filter((tpc) => entry.care?.[tpc.key])
+    : []
+  const propagation = entry.propagation ?? []
+  const diseases = entry.diseases ?? []
+  const pests = entry.pests ?? []
+  const hasCareGuide =
+    careTopics.length > 0 || propagation.length > 0 || diseases.length > 0 || pests.length > 0
 
   return (
     <div className={styles.detail} role="dialog" aria-modal="true" aria-label={entry.commonName}>
@@ -90,8 +212,16 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
             <p className={styles.detailLatin}>{entry.latinName}</p>
           </div>
 
-          {/* Description */}
+          {/* Description + source */}
           <p className={styles.detailDesc}>{description}</p>
+          <a
+            href={entry.wikiUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.detailWikiLink}
+          >
+            {t('catalogWikiLink')}
+          </a>
 
           {/* Stats grid */}
           {(entry.light != null || entry.water != null || entry.humidity != null || entry.difficulty != null) && (
@@ -169,14 +299,6 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
             </section>
           )}
 
-          {/* Care tips */}
-          {entry.careTips && (
-            <section className={styles.detailSection}>
-              <h3 className={styles.detailSectionTitle}>{t('careTips')}</h3>
-              <p className={styles.detailTips}>{entry.careTips}</p>
-            </section>
-          )}
-
           {/* Schedule hint */}
           {entry.recommendedWateringIntervalDays != null && (
             <section className={styles.detailSection}>
@@ -193,15 +315,68 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
             </section>
           )}
 
-          {/* Wikipedia link */}
-          <a
-            href={entry.wikiUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.detailWikiLink}
-          >
-            {t('catalogWikiLink')}
-          </a>
+          {/* Care guide — structured per-topic sections (reference «Советы по уходу») */}
+          {hasCareGuide ? (
+            <section className={styles.careGuide}>
+              <h3 className={styles.careGuideHeading}>{t('careTips')}</h3>
+
+              {careTopics.map((tpc) => (
+                <div className={styles.careTopic} key={tpc.key}>
+                  <div className={styles.careTopicHead}>
+                    <span className={styles.careTopicIcon}>
+                      <tpc.Icon className={styles.careTopicIconSvg} />
+                    </span>
+                    <span className={styles.careTopicTitle}>{t(tpc.titleKey)}</span>
+                  </div>
+                  <p className={styles.careTopicText}>{L(entry.care![tpc.key]!)}</p>
+                </div>
+              ))}
+
+              {propagation.length > 0 && (
+                <ChipGroup
+                  groupId="prop"
+                  Icon={SproutIcon}
+                  title={t('secPropagation')}
+                  openItem={openItem}
+                  setOpenItem={setOpenItem}
+                  items={propagation.map((m: PropagationMethod) => ({
+                    id: m.id,
+                    name: L(m.name),
+                    content: <p className={styles.chipText}>{L(m.steps)}</p>,
+                  }))}
+                />
+              )}
+
+              {diseases.length > 0 && (
+                <ChipGroup
+                  groupId="dis"
+                  Icon={AlertCircleIcon}
+                  title={t('secDiseases')}
+                  openItem={openItem}
+                  setOpenItem={setOpenItem}
+                  items={diseases.map((a) => ({ id: a.id, name: L(a.name), content: renderAilment(a) }))}
+                />
+              )}
+
+              {pests.length > 0 && (
+                <ChipGroup
+                  groupId="pest"
+                  Icon={BugIcon}
+                  title={t('secPests')}
+                  openItem={openItem}
+                  setOpenItem={setOpenItem}
+                  items={pests.map((a) => ({ id: a.id, name: L(a.name), content: renderAilment(a) }))}
+                />
+              )}
+            </section>
+          ) : (
+            entry.careTips && (
+              <section className={styles.detailSection}>
+                <h3 className={styles.detailSectionTitle}>{t('careTips')}</h3>
+                <p className={styles.detailTips}>{entry.careTips}</p>
+              </section>
+            )
+          )}
         </div>
       </div>
 

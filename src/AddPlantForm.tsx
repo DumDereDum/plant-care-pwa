@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function AddPlantForm({ onAdded }: Props) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
   const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
@@ -89,7 +89,7 @@ export default function AddPlantForm({ onAdded }: Props) {
 
     if (catalogEntry) {
       const guideId = (await db.careGuides.add(
-        catalogEntryToGuideData(catalogEntry, i18n.language) as CareGuide,
+        catalogEntryToGuideData(catalogEntry) as CareGuide,
       )) as number
       await db.plants.update(plantId, { careGuideId: guideId })
     }

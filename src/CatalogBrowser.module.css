@@ -622,3 +622,124 @@
 .detailSelectBtn:hover {
   background: var(--color-primary-strong);
 }
+
+/* ── Care guide — structured per-topic sections ──────────────────── */
+
+.careGuide {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+
+.careGuideHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-h3, var(--text-body));
+  font-weight: 700;
+  color: var(--color-muted);
+  text-align: center;
+  margin: 0;
+  padding: var(--space-3) 0;
+}
+
+.careTopic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.careTopicHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.careTopicIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--green-100);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.careTopicIconSvg {
+  width: 15px;
+  height: 15px;
+  color: var(--green-700);
+}
+
+.careTopicTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: var(--green-700);
+}
+
+.careTopicText {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* ── Expandable chips (propagation / diseases / pests) ───────────── */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  border: 1.5px solid transparent;
+  background: var(--color-bg);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+
+.chip:hover {
+  color: var(--green-700);
+}
+
+.chipOpen {
+  border-color: var(--color-primary);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+
+.chipDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  padding: var(--space-3);
+  background: var(--green-50);
+  border-radius: var(--radius-sm);
+}
+
+.chipText {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.chipLabel {
+  font-weight: 700;
+  color: var(--green-700);
+}

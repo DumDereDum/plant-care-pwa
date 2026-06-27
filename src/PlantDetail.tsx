@@ -152,7 +152,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
     })
 
     if (editCatalogEntry) {
-      const guideData = catalogEntryToGuideData(editCatalogEntry, i18n.language)
+      const guideData = catalogEntryToGuideData(editCatalogEntry)
       if (guide) {
         await db.careGuides.update(guide.id, guideData)
       } else {

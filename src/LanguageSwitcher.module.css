@@ -1,0 +1,43 @@
+/* Segmented pill toggle (EN | RU) that matches the app's rounded, green design. */
+
+.switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.option {
+  appearance: none;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font: inherit;
+  font-size: var(--text-tiny);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option:hover:not(.active) {
+  color: var(--color-text);
+}
+
+.active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  cursor: default;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

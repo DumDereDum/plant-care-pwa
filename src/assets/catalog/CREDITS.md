@@ -14,3 +14,10 @@ Images downloaded from Wikimedia Commons (per user authorization). Each is licen
 - **ficus-lyrata** — [Starr_031108-0130_Ficus_lyrata.jpg](https://commons.wikimedia.org/wiki/File:Starr_031108-0130_Ficus_lyrata.jpg) — https://en.wikipedia.org/wiki/Ficus_lyrata
 - **calathea-orbifolia** — [Calathea_orbifolia_2.jpg](https://commons.wikimedia.org/wiki/File:Calathea_orbifolia_2.jpg) — https://en.wikipedia.org/wiki/Calathea_orbifolia
 - **dracaena-marginata** — [Dracaena_reflexa.JPG](https://commons.wikimedia.org/wiki/File:Dracaena_reflexa.JPG) — https://en.wikipedia.org/wiki/Dracaena_marginata
+- **kalanchoe-blossfeldiana** — [Kalanchoe_blossfeldiana_3.jpg](https://commons.wikimedia.org/wiki/File:Kalanchoe_blossfeldiana_3.jpg) — https://en.wikipedia.org/wiki/Kalanchoe_blossfeldiana
+- **haworthia-fasciata** — [1_Haworthia_fasciata_-MBB_Kabeljouws_River.jpg](https://commons.wikimedia.org/wiki/File:1_Haworthia_fasciata_-MBB_Kabeljouws_River.jpg) — https://en.wikipedia.org/wiki/Haworthiopsis_fasciata
+- **saintpaulia-ionantha** — [Saintpaulia_ionantha.jpg](https://commons.wikimedia.org/wiki/File:Saintpaulia_ionantha.jpg) — https://en.wikipedia.org/wiki/Saintpaulia
+- **phalaenopsis** — [Phalaenopsis_philippinensis_NationalOrchidGarden-Singapore.jpg](https://commons.wikimedia.org/wiki/File:Phalaenopsis_philippinensis_NationalOrchidGarden-Singapore.jpg) — https://en.wikipedia.org/wiki/Phalaenopsis
+- **begonia-tuberhybrida** — [Begonia-tuberhybride_Red.jpg](https://commons.wikimedia.org/wiki/File:Begonia-tuberhybride_Red.jpg) — https://en.wikipedia.org/wiki/Begonia_%C3%97_tuberhybrida
+- **capsicum-annuum-ornamental** — [Capsicum_annuum_-_Köhler's_Medizinal-Pflanzen-027.jpg](https://commons.wikimedia.org/wiki/File:Capsicum_annuum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-027.jpg) — https://en.wikipedia.org/wiki/Capsicum_annuum
+- **solanum-lycopersicum-cherry** — [Tomates_cerises_Luc_Viatour.jpg](https://commons.wikimedia.org/wiki/File:Tomates_cerises_Luc_Viatour.jpg) — https://en.wikipedia.org/wiki/Cherry_tomato

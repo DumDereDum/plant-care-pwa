@@ -385,17 +385,34 @@
    ════════════════════════════════════════════════════════════════ */
 
 .detail {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 200;
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  /* Slide in from the right */
+  max-width: var(--app-max-width);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
   animation: slideInRight 0.22s ease;
 }
 
+@media (max-width: 480px) {
+  .detail {
+    left: 0;
+    transform: none;
+    max-width: 100%;
+    animation-name: slideInRightMobile;
+  }
+}
+
 @keyframes slideInRight {
+  from { transform: translateX(calc(-50% + 20px)); opacity: 0; }
+  to   { transform: translateX(-50%);               opacity: 1; }
+}
+
+@keyframes slideInRightMobile {
   from { transform: translateX(20px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }

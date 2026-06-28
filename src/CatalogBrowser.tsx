@@ -8,6 +8,7 @@ import {
   type Ailment,
   type CatalogEntry,
   type LocalizedText,
+  type PlantCategory,
   type PropagationMethod,
 } from './catalog'
 import { PERK_CONFIG } from './perkConfig'
@@ -32,9 +33,10 @@ import {
 import styles from './CatalogBrowser.module.css'
 
 interface Props {
-  onSelect: (entry: CatalogEntry) => void
-  onAddManually: () => void
-  onClose: () => void
+  onSelect?: (entry: CatalogEntry) => void
+  onAddManually?: () => void
+  onClose?: () => void
+  standalone?: boolean
 }
 
 // ── Plant detail panel ─────────────────────────────────────────────────────────
@@ -395,54 +397,127 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
 
 // ── Catalog browser ────────────────────────────────────────────────────────────
 
-export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Props) {
+export default function CatalogBrowser({ onSelect, onAddManually, onClose, standalone }: Props) {
   const { t, i18n } = useTranslation()
   const [search, setSearch] = useState('')
   const [detailEntry, setDetailEntry] = useState<CatalogEntry | null>(null)
+  const [activeFilter, setActiveFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'az' | 'difficulty' | 'watering'>('az')
+  const [groupBy, setGroupBy] = useState<'none' | 'category'>('none')
   const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    if (standalone) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
-  }, [])
+  }, [standalone])
 
   useEffect(() => {
+    if (!onClose) return
     function handleKey(e: KeyboardEvent) {
       if (e.key !== 'Escape') return
       if (detailEntry) setDetailEntry(null)
-      else onClose()
+      else onClose!()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [detailEntry, onClose])
 
-  useEffect(() => { searchRef.current?.focus() }, [])
+  useEffect(() => { if (!standalone) searchRef.current?.focus() }, [standalone])
 
   const q = search.trim().toLowerCase()
-  const sorted = sortCatalogByName(i18n.language)
-  const filtered = q
-    ? sorted.filter(
-        (e) =>
-          e.commonName.toLowerCase().includes(q) ||
-          e.commonName_ru.toLowerCase().includes(q) ||
-          e.latinName.toLowerCase().includes(q),
-      )
-    : sorted
+
+  const FILTER_CHIPS = [
+    { key: 'all',           labelKey: 'catalogFilterAll' },
+    { key: 'petSafe',       labelKey: 'catalogFilterPetSafe' },
+    { key: 'airPurifying',  labelKey: 'catalogFilterAirPurifying' },
+    { key: 'lowLight',      labelKey: 'catalogFilterLowLight' },
+    { key: 'easyCare',      labelKey: 'catalogFilterEasyCare' },
+    { key: 'rareWatering',  labelKey: 'catalogFilterRareWatering' },
+  ] as const
+
+  function matchesFilter(e: CatalogEntry, f: string): boolean {
+    switch (f) {
+      case 'petSafe':      return !e.perks?.includes('toxicCats') && !e.perks?.includes('toxicDogs')
+      case 'airPurifying': return !!e.perks?.some((p) => p === 'airPurifying' || p === 'oxygenBoost')
+      case 'lowLight':     return (e.light ?? 99) <= 2
+      case 'easyCare':     return (e.difficulty ?? 99) <= 2
+      case 'rareWatering': return (e.water ?? 99) <= 2
+      default:             return true
+    }
+  }
+
+  const CAT_ORDER: PlantCategory[] = [
+    'flowering', 'decorative', 'succulent', 'cactus', 'climbing',
+    'palm', 'orchid', 'bromeliad', 'fern', 'bulbous', 'edible', 'carnivorous',
+  ]
+  const CAT_LABEL: Record<PlantCategory, string> = {
+    flowering:   'catFlowering',
+    decorative:  'catDecorative',
+    succulent:   'catSucculent',
+    edible:      'catEdible',
+    climbing:    'catClimbing',
+    bulbous:     'catBulbous',
+    palm:        'catPalm',
+    bromeliad:   'catBromeliad',
+    cactus:      'catCactus',
+    orchid:      'catOrchid',
+    carnivorous: 'catCarnivorous',
+    fern:        'catFern',
+  }
+
+  let pool = sortCatalogByName(i18n.language)
+  if (q) {
+    pool = pool.filter(
+      (e) =>
+        e.commonName.toLowerCase().includes(q) ||
+        e.commonName_ru.toLowerCase().includes(q) ||
+        e.latinName.toLowerCase().includes(q),
+    )
+  }
+  pool = pool.filter((e) => matchesFilter(e, activeFilter))
+  if (sortBy === 'difficulty') {
+    pool = [...pool].sort((a, b) => (a.difficulty ?? 99) - (b.difficulty ?? 99))
+  } else if (sortBy === 'watering') {
+    pool = [...pool].sort((a, b) => (a.water ?? 99) - (b.water ?? 99))
+  }
+
+  type Group = { key: string; labelKey: string; entries: CatalogEntry[] }
+  let groups: Group[]
+  if (groupBy === 'category') {
+    const byCat = new Map<string, CatalogEntry[]>()
+    for (const e of pool) {
+      const key = e.category ?? '__other__'
+      const arr = byCat.get(key) ?? []
+      arr.push(e)
+      byCat.set(key, arr)
+    }
+    groups = [
+      ...CAT_ORDER
+        .filter((c) => byCat.has(c))
+        .map((c) => ({ key: c, labelKey: CAT_LABEL[c], entries: byCat.get(c)! })),
+      ...(byCat.has('__other__') ? [{ key: '__other__', labelKey: 'catOther', entries: byCat.get('__other__')! }] : []),
+    ]
+  } else {
+    groups = [{ key: '__all__', labelKey: '', entries: pool }]
+  }
 
   return (
     <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
+      className={standalone ? styles.standaloneWrap : styles.overlay}
+      role={standalone ? undefined : 'dialog'}
+      aria-modal={standalone ? undefined : 'true'}
       aria-label={t('catalogBrowserTitle')}
     >
       {/* ── Grid view ── */}
       <div className={styles.header}>
         <h2 className={styles.title}>{t('catalogBrowserTitle')}</h2>
-        <button className={styles.closeBtn} onClick={onClose} aria-label={t('catalogClose')}>
-          ✕
-        </button>
+        {!standalone && onClose && (
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t('catalogClose')}>
+            ✕
+          </button>
+        )}
       </div>
 
       <div className={styles.searchWrap}>
@@ -456,13 +531,58 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
         />
       </div>
 
+      <div className={styles.filterBar}>
+        <div className={styles.chips}>
+          {FILTER_CHIPS.map(({ key, labelKey }) => (
+            <button
+              key={key}
+              type="button"
+              className={`${styles.filterChip} ${activeFilter === key ? styles.filterChipActive : ''}`}
+              onClick={() => setActiveFilter(key)}
+            >
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
+        <div className={styles.controlsRow}>
+          <label className={styles.controlLabel}>
+            {t('catalogSortLabel')}
+            <select
+              className={styles.controlSelect}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            >
+              <option value="az">{t('catalogSortAZ')}</option>
+              <option value="difficulty">{t('catalogSortDifficulty')}</option>
+              <option value="watering">{t('catalogSortWatering')}</option>
+            </select>
+          </label>
+          <label className={styles.controlLabel}>
+            {t('catalogGroupLabel')}
+            <select
+              className={styles.controlSelect}
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
+            >
+              <option value="none">{t('catalogGroupNone')}</option>
+              <option value="category">{t('catalogGroupCategory')}</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div className={styles.scrollArea}>
-        {filtered.length === 0 && (
+        {pool.length === 0 && (
           <p className={styles.noResults}>{t('catalogNoResults')}</p>
         )}
 
-        <div className={styles.grid}>
-          {filtered.map((entry) => {
+        {groups.map((group) => (
+          <div key={group.key}>
+            {groupBy === 'category' && (
+              <h3 className={styles.groupHeader}>{t(group.labelKey)}</h3>
+            )}
+            <div className={styles.grid}>
+          {group.entries.map((entry) => {
             const perks = entry.perks ?? []
             const frontPerks = perks.slice(0, 4)
             const displayName = localizedCommonName(entry, i18n.language)
@@ -472,12 +592,12 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
                 {/* Photo */}
                 <div
                   className={styles.photoWrap}
-                  onClick={() => onSelect(entry)}
+                  onClick={() => onSelect?.(entry)}
                   role="button"
                   tabIndex={0}
                   aria-label={displayName}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(entry) }
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(entry) }
                   }}
                 >
                   <LeafIcon className={styles.photoFallback} />
@@ -490,7 +610,7 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
                 </div>
 
                 {/* Card body */}
-                <div className={styles.cardBody} onClick={() => onSelect(entry)}>
+                <div className={styles.cardBody} onClick={() => onSelect?.(entry)}>
                   <span className={styles.cardName}>{displayName}</span>
 
                   <div className={styles.statsRow}>
@@ -545,13 +665,17 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
               </div>
             )
           })}
-        </div>
+            </div>
+          </div>
+        ))}
 
-        <div className={styles.manualRow}>
-          <button className={styles.manualBtn} onClick={onAddManually}>
-            {t('addManually')}
-          </button>
-        </div>
+        {onAddManually && (
+          <div className={styles.manualRow}>
+            <button className={styles.manualBtn} onClick={onAddManually}>
+              {t('addManually')}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Detail overlay ── */}
@@ -559,7 +683,7 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
         <PlantDetail
           entry={detailEntry}
           onClose={() => setDetailEntry(null)}
-          onSelect={(e) => { onSelect(e) }}
+          onSelect={(e) => { onSelect?.(e) }}
         />
       )}
     </div>

@@ -1,14 +1,15 @@
 import type { ComponentType } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CalendarIcon, DropIcon, HelpIcon, LeafIcon } from './ui/icons'
+import { BookIcon, CalendarIcon, DropIcon, HelpIcon, LeafIcon } from './ui/icons'
 import styles from './BottomNav.module.css'
 
-export type Tab = 'today' | 'plants' | 'calendar' | 'help'
+export type Tab = 'today' | 'calendar' | 'plants' | 'catalog' | 'help'
 
 const ITEMS: { tab: Tab; labelKey: string; Icon: ComponentType<{ className?: string }> }[] = [
   { tab: 'today', labelKey: 'tabToday', Icon: DropIcon },
-  { tab: 'plants', labelKey: 'tabPlants', Icon: LeafIcon },
   { tab: 'calendar', labelKey: 'tabCalendar', Icon: CalendarIcon },
+  { tab: 'plants', labelKey: 'tabPlants', Icon: LeafIcon },
+  { tab: 'catalog', labelKey: 'tabCatalog', Icon: BookIcon },
   { tab: 'help', labelKey: 'tabHelp', Icon: HelpIcon },
 ]
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import AddPlantForm from './AddPlantForm'
 import BottomNav, { type Tab } from './BottomNav'
 import CalendarScreen from './CalendarScreen'
+import CatalogBrowser from './CatalogBrowser'
 import DataTransferPanel from './DataTransferPanel'
 import InstallGuide from './InstallGuide'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -57,6 +58,8 @@ export default function App() {
           ))}
 
         {tab === 'calendar' && <CalendarScreen refreshKey={refreshKey} onRefresh={refresh} />}
+
+        {tab === 'catalog' && <CatalogBrowser standalone />}
 
         {tab === 'help' && <InstallGuide />}
       </main>

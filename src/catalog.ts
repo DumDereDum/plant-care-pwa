@@ -74,6 +74,20 @@ export interface Ailment {
  * It mirrors CareGuide fields (minus `id` and `source`) plus display names.
  * Keep this interface stable — AI-generated entries will be validated against it.
  */
+export type PlantCategory =
+  | 'flowering'
+  | 'decorative'
+  | 'succulent'
+  | 'edible'
+  | 'climbing'
+  | 'bulbous'
+  | 'palm'
+  | 'bromeliad'
+  | 'cactus'
+  | 'orchid'
+  | 'carnivorous'
+  | 'fern'
+
 export interface CatalogEntry {
   /** Stable slug used as a key; never rename once shipped. */
   id: string
@@ -82,6 +96,7 @@ export interface CatalogEntry {
   /** Russian common name, shown when the UI language is Russian. */
   commonName_ru: string
   latinName: string
+  category?: PlantCategory
   light?: 1 | 2 | 3 | 4 | 5
   water?: 1 | 2 | 3 | 4 | 5
   humidity?: 1 | 2 | 3 | 4 | 5
@@ -114,6 +129,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Monstera',
     commonName_ru: 'Монстера',
     latinName: 'Monstera deliciosa',
+    category: 'climbing',
     light: 3,
     water: 3,
     humidity: 4,
@@ -276,6 +292,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Rubber Plant',
     commonName_ru: 'Фикус каучуконосный',
     latinName: 'Ficus elastica',
+    category: 'decorative',
     light: 4,
     water: 2,
     humidity: 2,
@@ -298,6 +315,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Pothos',
     commonName_ru: 'Эпипремнум',
     latinName: 'Epipremnum aureum',
+    category: 'climbing',
     light: 2,
     water: 2,
     humidity: 2,
@@ -320,6 +338,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Snake Plant',
     commonName_ru: 'Сансевиерия',
     latinName: 'Sansevieria trifasciata',
+    category: 'decorative',
     light: 2,
     water: 1,
     humidity: 1,
@@ -342,6 +361,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Peace Lily',
     commonName_ru: 'Спатифиллум',
     latinName: 'Spathiphyllum wallisii',
+    category: 'flowering',
     light: 2,
     water: 3,
     humidity: 4,
@@ -364,6 +384,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Spider Plant',
     commonName_ru: 'Хлорофитум',
     latinName: 'Chlorophytum comosum',
+    category: 'decorative',
     light: 3,
     water: 2,
     humidity: 2,
@@ -386,6 +407,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'ZZ Plant',
     commonName_ru: 'Замиокулькас',
     latinName: 'Zamioculcas zamiifolia',
+    category: 'decorative',
     light: 2,
     water: 1,
     humidity: 1,
@@ -408,6 +430,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Aloe Vera',
     commonName_ru: 'Алоэ вера',
     latinName: 'Aloe vera',
+    category: 'succulent',
     light: 5,
     water: 1,
     humidity: 1,
@@ -430,6 +453,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Jade Plant',
     commonName_ru: 'Толстянка',
     latinName: 'Crassula ovata',
+    category: 'succulent',
     light: 4,
     water: 1,
     humidity: 1,
@@ -452,6 +476,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Fiddle-leaf Fig',
     commonName_ru: 'Фикус лировидный',
     latinName: 'Ficus lyrata',
+    category: 'decorative',
     light: 5,
     water: 3,
     humidity: 3,
@@ -474,6 +499,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Calathea',
     commonName_ru: 'Калатея',
     latinName: 'Calathea orbifolia',
+    category: 'decorative',
     light: 2,
     water: 3,
     humidity: 5,
@@ -496,6 +522,7 @@ export const CATALOG: CatalogEntry[] = [
     commonName: 'Dracaena',
     commonName_ru: 'Драцена',
     latinName: 'Dracaena marginata',
+    category: 'decorative',
     light: 3,
     water: 2,
     humidity: 2,

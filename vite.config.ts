@@ -46,8 +46,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // woff2 included so self-hosted fonts are precached and work offline.
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // woff2 = self-hosted fonts; webp = bundled catalog photos — both precached for offline.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webp}'],
       },
     }),
   ],

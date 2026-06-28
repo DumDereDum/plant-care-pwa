@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  CATALOG_SORTED,
+  catalogPhoto,
+  localizedCommonName,
+  sortCatalogByName,
   type Ailment,
   type CatalogEntry,
   type LocalizedText,
@@ -133,6 +135,7 @@ interface DetailProps {
 function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
   const { t, i18n } = useTranslation()
   const isRu = i18n.language.startsWith('ru')
+  const name = localizedCommonName(entry, i18n.language)
   const description = isRu ? entry.description_ru : entry.description_en
   const perks = entry.perks ?? []
   // Currently expanded chip, keyed as `${groupId}:${itemId}`; null = all collapsed.
@@ -182,13 +185,13 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
     careTopics.length > 0 || propagation.length > 0 || diseases.length > 0 || pests.length > 0
 
   return (
-    <div className={styles.detail} role="dialog" aria-modal="true" aria-label={entry.commonName}>
+    <div className={styles.detail} role="dialog" aria-modal="true" aria-label={name}>
       {/* Sticky header */}
       <div className={styles.detailHeader}>
         <button className={styles.detailBack} onClick={onClose} aria-label={t('back')}>
           ←
         </button>
-        <span className={styles.detailHeaderName}>{entry.commonName}</span>
+        <span className={styles.detailHeaderName}>{name}</span>
         <div style={{ width: 40 }} />
       </div>
 
@@ -198,8 +201,8 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
         <div className={styles.detailHero}>
           <LeafIcon className={styles.detailHeroFallback} />
           <img
-            src={entry.photoUrl}
-            alt={entry.commonName}
+            src={catalogPhoto(entry) ?? entry.photoUrl}
+            alt={name}
             className={styles.detailHeroImg}
             onError={(e) => { e.currentTarget.style.opacity = '0' }}
           />
@@ -208,7 +211,7 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
         <div className={styles.detailContent}>
           {/* Name block */}
           <div className={styles.detailNameBlock}>
-            <h2 className={styles.detailName}>{entry.commonName}</h2>
+            <h2 className={styles.detailName}>{name}</h2>
             <p className={styles.detailLatin}>{entry.latinName}</p>
           </div>
 
@@ -393,7 +396,7 @@ function PlantDetail({ entry, onClose, onSelect }: DetailProps) {
 // ── Catalog browser ────────────────────────────────────────────────────────────
 
 export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [search, setSearch] = useState('')
   const [detailEntry, setDetailEntry] = useState<CatalogEntry | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -417,13 +420,15 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
   useEffect(() => { searchRef.current?.focus() }, [])
 
   const q = search.trim().toLowerCase()
+  const sorted = sortCatalogByName(i18n.language)
   const filtered = q
-    ? CATALOG_SORTED.filter(
+    ? sorted.filter(
         (e) =>
           e.commonName.toLowerCase().includes(q) ||
+          e.commonName_ru.toLowerCase().includes(q) ||
           e.latinName.toLowerCase().includes(q),
       )
-    : CATALOG_SORTED
+    : sorted
 
   return (
     <div
@@ -460,6 +465,7 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
           {filtered.map((entry) => {
             const perks = entry.perks ?? []
             const frontPerks = perks.slice(0, 4)
+            const displayName = localizedCommonName(entry, i18n.language)
 
             return (
               <div key={entry.id} className={styles.card}>
@@ -469,15 +475,15 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
                   onClick={() => onSelect(entry)}
                   role="button"
                   tabIndex={0}
-                  aria-label={entry.commonName}
+                  aria-label={displayName}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(entry) }
                   }}
                 >
                   <LeafIcon className={styles.photoFallback} />
                   <img
-                    src={entry.photoUrl}
-                    alt={entry.commonName}
+                    src={catalogPhoto(entry) ?? entry.photoUrl}
+                    alt={displayName}
                     className={styles.photo}
                     onError={(e) => { e.currentTarget.style.opacity = '0' }}
                   />
@@ -485,7 +491,7 @@ export default function CatalogBrowser({ onSelect, onAddManually, onClose }: Pro
 
                 {/* Card body */}
                 <div className={styles.cardBody} onClick={() => onSelect(entry)}>
-                  <span className={styles.cardName}>{entry.commonName}</span>
+                  <span className={styles.cardName}>{displayName}</span>
 
                   <div className={styles.statsRow}>
                     {entry.light != null && (

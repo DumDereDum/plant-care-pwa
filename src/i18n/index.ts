@@ -23,6 +23,11 @@ i18n.use(initReactI18next).init({
 
 i18n.on('languageChanged', (lng: string) => {
   localStorage.setItem(STORAGE_KEY, lng)
+  document.documentElement.lang = lng.startsWith('ru') ? 'ru' : 'en'
 })
+
+// Sync <html lang> on startup too (languageChanged only fires on later switches), so screen
+// readers and the browser treat the page as the right language from the first paint.
+document.documentElement.lang = (i18n.resolvedLanguage ?? 'en').startsWith('ru') ? 'ru' : 'en'
 
 export default i18n

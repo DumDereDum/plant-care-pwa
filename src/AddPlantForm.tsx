@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { catalogEntryToGuideData, type CatalogEntry } from './catalog'
+import { catalogEntryToGuideData, localizedCommonName, type CatalogEntry } from './catalog'
 import { compressImage, imageMimeType } from './compressImage'
 import db, { type CareGuide } from './db'
 import CatalogBrowser from './CatalogBrowser'
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function AddPlantForm({ onAdded }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [name, setName] = useState('')
   const [intervalDays, setIntervalDays] = useState(7)
   const [fertilizeEnabled, setFertilizeEnabled] = useState(false)
@@ -40,7 +40,7 @@ export default function AddPlantForm({ onAdded }: Props) {
   function handleCatalogEntry(entry: CatalogEntry) {
     setCatalogEntry(entry)
     // Pre-fill name only when the field is still empty
-    if (!name.trim()) setName(entry.commonName)
+    if (!name.trim()) setName(localizedCommonName(entry, i18n.language))
     if (entry.recommendedWateringIntervalDays) {
       setIntervalDays(entry.recommendedWateringIntervalDays)
     }
@@ -149,7 +149,7 @@ export default function AddPlantForm({ onAdded }: Props) {
           </Button>
           {catalogEntry && (
             <span className={styles.hint}>
-              {t('selectedSpecies', { name: catalogEntry.commonName })}
+              {t('selectedSpecies', { name: localizedCommonName(catalogEntry, i18n.language) })}
             </span>
           )}
         </div>

@@ -1,5 +1,22 @@
 import type { CareGuide } from './db'
 
+/**
+ * Bundled species photos, downloaded from Wikimedia Commons and optimized to WebP
+ * (see assets/catalog/CREDITS.md for sources/attribution). Imported via Vite's glob so they
+ * are hashed, base-prefixed and precached by the service worker — the catalog shows photos
+ * fully OFFLINE, with no dependency on Wikipedia being reachable. Keyed by the file's slug.
+ */
+const PHOTO_MODULES = import.meta.glob('./assets/catalog/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+
+const PHOTO_BY_SLUG: Record<string, string> = {}
+for (const [path, url] of Object.entries(PHOTO_MODULES)) {
+  const slug = path.split('/').pop()!.replace(/\.webp$/, '')
+  PHOTO_BY_SLUG[slug] = url
+}
+
 /** A bilingual text blob. Both languages are bundled; the UI picks one at render time. */
 export interface LocalizedText {
   en: string
@@ -60,7 +77,10 @@ export interface Ailment {
 export interface CatalogEntry {
   /** Stable slug used as a key; never rename once shipped. */
   id: string
+  /** English common name (default / fallback display name). */
   commonName: string
+  /** Russian common name, shown when the UI language is Russian. */
+  commonName_ru: string
   latinName: string
   light?: 1 | 2 | 3 | 4 | 5
   water?: 1 | 2 | 3 | 4 | 5
@@ -81,7 +101,10 @@ export interface CatalogEntry {
   diseases?: Ailment[]
   pests?: Ailment[]
   wikiUrl: string
-  /** Wikipedia thumbnail URL (330px wide). Used on catalog cards; requires network. */
+  /**
+   * Source Wikimedia Commons thumbnail URL the bundled photo came from (kept for reference and
+   * as a last-resort fallback). Display uses the bundled local WebP via `catalogPhoto()`.
+   */
   photoUrl: string
 }
 
@@ -89,6 +112,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'monstera-deliciosa',
     commonName: 'Monstera',
+    commonName_ru: 'Монстера',
     latinName: 'Monstera deliciosa',
     light: 3,
     water: 3,
@@ -250,6 +274,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'ficus-elastica',
     commonName: 'Rubber Plant',
+    commonName_ru: 'Фикус каучуконосный',
     latinName: 'Ficus elastica',
     light: 4,
     water: 2,
@@ -271,6 +296,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'epipremnum-aureum',
     commonName: 'Pothos',
+    commonName_ru: 'Эпипремнум',
     latinName: 'Epipremnum aureum',
     light: 2,
     water: 2,
@@ -292,6 +318,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'sansevieria-trifasciata',
     commonName: 'Snake Plant',
+    commonName_ru: 'Сансевиерия',
     latinName: 'Sansevieria trifasciata',
     light: 2,
     water: 1,
@@ -313,6 +340,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'spathiphyllum',
     commonName: 'Peace Lily',
+    commonName_ru: 'Спатифиллум',
     latinName: 'Spathiphyllum wallisii',
     light: 2,
     water: 3,
@@ -334,6 +362,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'chlorophytum-comosum',
     commonName: 'Spider Plant',
+    commonName_ru: 'Хлорофитум',
     latinName: 'Chlorophytum comosum',
     light: 3,
     water: 2,
@@ -355,6 +384,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'zamioculcas-zamiifolia',
     commonName: 'ZZ Plant',
+    commonName_ru: 'Замиокулькас',
     latinName: 'Zamioculcas zamiifolia',
     light: 2,
     water: 1,
@@ -376,6 +406,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'aloe-vera',
     commonName: 'Aloe Vera',
+    commonName_ru: 'Алоэ вера',
     latinName: 'Aloe vera',
     light: 5,
     water: 1,
@@ -397,6 +428,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'crassula-ovata',
     commonName: 'Jade Plant',
+    commonName_ru: 'Толстянка',
     latinName: 'Crassula ovata',
     light: 4,
     water: 1,
@@ -418,6 +450,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'ficus-lyrata',
     commonName: 'Fiddle-leaf Fig',
+    commonName_ru: 'Фикус лировидный',
     latinName: 'Ficus lyrata',
     light: 5,
     water: 3,
@@ -439,6 +472,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'calathea-orbifolia',
     commonName: 'Calathea',
+    commonName_ru: 'Калатея',
     latinName: 'Calathea orbifolia',
     light: 2,
     water: 3,
@@ -460,6 +494,7 @@ export const CATALOG: CatalogEntry[] = [
   {
     id: 'dracaena-marginata',
     commonName: 'Dracaena',
+    commonName_ru: 'Драцена',
     latinName: 'Dracaena marginata',
     light: 3,
     water: 2,
@@ -480,10 +515,22 @@ export const CATALOG: CatalogEntry[] = [
   },
 ]
 
-/** Sorted alphabetically by common name for display. */
-export const CATALOG_SORTED = [...CATALOG].sort((a, b) =>
-  a.commonName.localeCompare(b.commonName),
-)
+/** The catalog entry's common name in the given locale (Russian when locale starts with 'ru'). */
+export function localizedCommonName(entry: CatalogEntry, locale: string): string {
+  return locale.startsWith('ru') ? entry.commonName_ru : entry.commonName
+}
+
+/** Bundled local photo URL for a catalog entry (offline-capable). Undefined if none bundled. */
+export function catalogPhoto(entry: CatalogEntry): string | undefined {
+  return PHOTO_BY_SLUG[entry.id]
+}
+
+/** Catalog sorted alphabetically by the localized common name for the given locale. */
+export function sortCatalogByName(locale: string): CatalogEntry[] {
+  return [...CATALOG].sort((a, b) =>
+    localizedCommonName(a, locale).localeCompare(localizedCommonName(b, locale), locale),
+  )
+}
 
 /**
  * Convert a catalog entry into a CareGuide payload ready for db.careGuides.add().

@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { computeAchievements } from './achievements'
-import { CATALOG_SORTED, catalogEntryToGuideData, type CatalogEntry } from './catalog'
+import {
+  CATALOG,
+  catalogEntryToGuideData,
+  localizedCommonName,
+  sortCatalogByName,
+  type CatalogEntry,
+} from './catalog'
 import { imageMimeType } from './compressImage'
 import CareGuideFace from './CareGuideFace'
 import CareGuideEditForm from './CareGuideEditForm'
@@ -128,7 +134,7 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
   }
 
   function handleEditCatalogSelect(id: string) {
-    const entry = CATALOG_SORTED.find((e) => e.id === id) ?? null
+    const entry = CATALOG.find((e) => e.id === id) ?? null
     setEditCatalogEntry(entry)
     if (!entry) return
     if (entry.recommendedWateringIntervalDays) {
@@ -223,9 +229,9 @@ export default function PlantDetail({ plantId, refreshKey, onClose, onChanged }:
                   onChange={(e) => handleEditCatalogSelect(e.target.value)}
                 >
                   <option value="">{t('speciesPickerPlaceholder')}</option>
-                  {CATALOG_SORTED.map((entry) => (
+                  {sortCatalogByName(i18n.language).map((entry) => (
                     <option key={entry.id} value={entry.id}>
-                      {entry.commonName} — {entry.latinName}
+                      {localizedCommonName(entry, i18n.language)} — {entry.latinName}
                     </option>
                   ))}
                 </select>

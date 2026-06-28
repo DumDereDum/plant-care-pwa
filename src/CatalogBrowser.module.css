@@ -727,7 +727,9 @@
   gap: var(--space-2);
   margin-top: var(--space-1);
   padding: var(--space-3);
-  background: var(--green-50);
+  /* Translucent green so it tints over the current surface in BOTH light and dark themes —
+     a fixed --green-50 left near-white text unreadable on a pale box in dark mode. */
+  background: rgba(47, 181, 95, 0.12);
   border-radius: var(--radius-sm);
 }
 
@@ -741,5 +743,6 @@
 
 .chipLabel {
   font-weight: 700;
-  color: var(--green-700);
+  /* Theme-aware (brightens to green-500 in dark) so the label stays legible on the tint. */
+  color: var(--color-primary);
 }
